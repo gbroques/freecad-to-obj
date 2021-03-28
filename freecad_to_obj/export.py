@@ -48,7 +48,8 @@ def export(exportList) -> str:
     offsetv = 1
     offsetvn = 1
 
-    for obj in exportList:
+    objects = _ungroup_objects(exportList)
+    for obj in objects:
         if obj.isDerivedFrom("Part::Feature") or obj.isDerivedFrom("Mesh::Feature") or obj.isDerivedFrom("App::Link"):
             hires = None
             if FreeCAD.GuiUp:
@@ -216,3 +217,22 @@ def _findVert(aVertex, aList):
                 if (round(aVertex.Z, p) == round(aList[i].Z, p)):
                     return i
     return None
+
+
+def _ungroup_objects(objects):
+    ungrouped = []
+    for obj in objects:
+        if _is_group(obj):
+            objs = _ungroup_objects(obj.Group)
+            ungrouped.extend(objs)
+        else:
+            ungrouped.append(obj)
+    return ungrouped
+
+
+def _is_group(obj):
+    group_types = {
+        'App::DocumentObjectGroup',
+        'App::Part'
+    }
+    return obj.TypeId in group_types
