@@ -12,7 +12,7 @@ Both functions have the following limitations:
 1. Use an object's `Name` instead of `Label`
 2. and write to a file immediately instead of providing a string or the file's contents.
 
-Additionally, the `Arch` module's export to OBJ function lacks the ability to export [`App::Part`](https://wiki.freecadweb.org/App_Part)s.
+Additionally, the `Arch` module's export to OBJ function lacks the ability to export [`App::Part`](https://wiki.freecadweb.org/App_Part) objects.
 
 ## Usage
 
