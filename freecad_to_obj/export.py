@@ -125,7 +125,10 @@ def _getIndices(obj, shape, offsetv, offsetvn):
                     if not curves:
                         if obj.isDerivedFrom("App::Link"):
                             myshape = obj.LinkedObject.Shape.copy(False)
-                            myshape.Placement = obj.LinkPlacement
+                            if obj.LinkTransform is True:
+                                myshape.Placement = obj.LinkPlacement * obj.LinkedObject.Placement
+                            else:
+                                myshape.Placement = obj.LinkPlacement
                         else:
                             myshape = obj.Shape.copy(False)
                             myshape.Placement = obj.getGlobalPlacement()
@@ -138,7 +141,10 @@ def _getIndices(obj, shape, offsetv, offsetvn):
                 if obj.isDerivedFrom("App::Link"):
                     if obj.Shape:
                         myshape = obj.Shape.copy(False)
-                        myshape.Placement = obj.LinkPlacement
+                        if obj.LinkTransform is True:
+                            myshape.Placement = obj.LinkPlacement * obj.LinkedObject.Placement
+                        else:
+                            myshape.Placement = obj.LinkPlacement
                     else:
                         myshape = obj.Shape.copy(False)
                         myshape.Placement = obj.getGlobalPlacement()

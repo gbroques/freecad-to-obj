@@ -83,6 +83,39 @@ class FreeCADToObjExportTest(unittest.TestCase):
         cube_document_path.unlink()
         link_document_path.unlink()
 
+    def test_export_with_link_transform_true(self):
+        test_package_path = Path(__file__).parent
+
+        cube_document = App.newDocument('Cube')
+        box = cube_document.addObject('Part::Box', 'Box')
+        box.Label = 'Cube'
+        box.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        cube_document.recompute()
+
+        cube_document_path = test_package_path.joinpath('Cube.FCStd')
+        cube_document.saveAs(str(cube_document_path))
+
+        link_document = App.newDocument('CubeLink')
+        link_document_path = test_package_path.joinpath('LinkCube.FCStd')
+        link_document.saveAs(str(link_document_path))
+        link = link_document.addObject('App::Link', 'Link')
+        link.setLink(box)
+        link.Label = box.Label
+        link.LinkTransform = True
+
+        link_document.recompute()
+
+        with open(os.path.join(os.path.dirname(__file__), 'translated_cube.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([link])
+
+        self.assertEqual(obj_file_contents, expected)
+
+        cube_document_path.unlink()
+        link_document_path.unlink()
+
 
 if __name__ == '__main__':
     unittest.main()
