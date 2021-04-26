@@ -2,9 +2,9 @@
 
 ## Prerequisites
 1. Install [conda](https://docs.conda.io/en/latest/miniconda.html).
-2. Create a dedicated conda environment named `freecad-to-obj` with `freecad` as a dependency.
+2. Create a dedicated conda environment named `freecad-to-obj` from the `environment.yaml` file in the root of this repository.
    
-       conda create --name freecad-to-obj freecad
+       conda env create --file environment.yml
 
 3. Activate `freecad-to-obj`.
 
@@ -21,4 +21,8 @@
 ## How to Run Unit Tests
 After following the [Prerequisites](#Prerequisites), with the `freecad-to-obj` conda environment activated, execute the following command:
 
-    python -m unittest discover -s tests -p '*_test.py'
+    pytest
+
+Additionally, you can generate a code coverage report in `htmcov/` by executing the following command:
+
+    pytest --cov-report html --cov=freecad_to_obj tests

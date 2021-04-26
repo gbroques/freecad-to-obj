@@ -1,0 +1,7 @@
+name: freecad-to-obj
+channels:
+  - conda-forge
+dependencies:
+  - freecad
+  - pytest
+  - pytest-cov
