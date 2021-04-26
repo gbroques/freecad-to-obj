@@ -96,6 +96,7 @@ def _getIndices(obj, shape, offsetv, offsetvn):
                         FreeCAD.Console.PrintWarning(
                             "Found a shape containing curves, triangulating\n")
                         break
+            # Cylinder Curves are instance of Part.Circle and Part.Line
             except Exception:  # unimplemented curve type
                 if obj.isDerivedFrom("App::Link"):
                     if obj.Shape:
