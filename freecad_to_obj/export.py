@@ -25,14 +25,6 @@ import Mesh
 import MeshPart
 import Part
 
-if FreeCAD.GuiUp:
-    from DraftTools import translate
-else:
-    # \cond
-    def translate(context, text):
-        return text
-    # \endcond
-
 
 p = Draft.precision()
 
@@ -51,61 +43,28 @@ def export(exportList) -> str:
     objects = _ungroup_objects(exportList)
     for obj in objects:
         if obj.isDerivedFrom("Part::Feature") or obj.isDerivedFrom("Mesh::Feature") or obj.isDerivedFrom("App::Link"):
-            hires = None
-            if FreeCAD.GuiUp:
-                visible = obj.ViewObject.isVisible()
-                if obj.ViewObject.DisplayMode == "HiRes":
-                    # check if high-resolution object is available
-                    if hasattr(obj, "HiRes"):
-                        if obj.HiRes:
-                            if obj.HiRes.isDerivedFrom("Mesh::Feature"):
-                                m = obj.HiRes.Mesh
-                            else:
-                                m = obj.HiRes.Shape
-                            hires = m.copy()
-                            hires.Placement = obj.Placement.multiply(
-                                m.Placement)
-                    if not hires:
-                        if hasattr(obj, "CloneOf"):
-                            if obj.CloneOf:
-                                if hasattr(obj.CloneOf, "HiRes"):
-                                    if obj.CloneOf.HiRes:
-                                        if obj.CloneOf.HiRes.isDerivedFrom("Mesh::Feature"):
-                                            m = obj.CloneOf.HiRes.Mesh
-                                        else:
-                                            m = obj.CloneOf.HiRes.Shape
-                                        hires = m.copy()
-                                        hires.Placement = obj.Placement.multiply(
-                                            obj.CloneOf.Placement).multiply(m.Placement)
+            if hasattr(obj, "Shape") and obj.Shape:
+                vlist, vnlist, elist, flist = _getIndices(
+                    obj, obj.Shape, offsetv, offsetvn)
+            elif hasattr(obj, "Mesh") and obj.Mesh:
+                vlist, vnlist, elist, flist = _getIndices(
+                    obj, obj.Mesh, offsetv, offsetvn)
+            if vlist is None:
+                FreeCAD.Console.PrintError(
+                    "Unable to export object " + obj.Label + ". Skipping.\n")
             else:
-                visible = True
-            if visible:
-                if hires:
-                    vlist, vnlist, elist, flist = _getIndices(
-                        obj, hires, offsetv, offsetvn)
-                else:
-                    if hasattr(obj, "Shape") and obj.Shape:
-                        vlist, vnlist, elist, flist = _getIndices(
-                            obj, obj.Shape, offsetv, offsetvn)
-                    elif hasattr(obj, "Mesh") and obj.Mesh:
-                        vlist, vnlist, elist, flist = _getIndices(
-                            obj, obj.Mesh, offsetv, offsetvn)
-                if vlist is None:
-                    FreeCAD.Console.PrintError(
-                        "Unable to export object " + obj.Label + ". Skipping.\n")
-                else:
-                    offsetv += len(vlist)
-                    offsetvn += len(vnlist)
-                    lines.append('o ' + obj.Label)
+                offsetv += len(vlist)
+                offsetvn += len(vnlist)
+                lines.append('o ' + obj.Label)
 
-                    for v in vlist:
-                        lines.append('v' + v)
-                    for vn in vnlist:
-                        lines.append('vn' + vn)
-                    for e in elist:
-                        lines.append('l' + e)
-                    for f in flist:
-                        lines.append('f' + f)
+                for v in vlist:
+                    lines.append('v' + v)
+                for vn in vnlist:
+                    lines.append('vn' + vn)
+                for e in elist:
+                    lines.append('l' + e)
+                for f in flist:
+                    lines.append('f' + f)
     return '\n'.join(lines) + '\n'
 
 
@@ -135,7 +94,7 @@ def _getIndices(obj, shape, offsetv, offsetvn):
                         mesh = MeshPart.meshFromShape(
                             Shape=myshape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
                         FreeCAD.Console.PrintWarning(
-                            translate("Arch", "Found a shape containing curves, triangulating")+"\n")
+                            "Found a shape containing curves, triangulating\n")
                         break
             except Exception:  # unimplemented curve type
                 if obj.isDerivedFrom("App::Link"):
@@ -151,7 +110,7 @@ def _getIndices(obj, shape, offsetv, offsetvn):
                     mesh = MeshPart.meshFromShape(
                         Shape=myshape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
                     FreeCAD.Console.PrintWarning(
-                        translate("Arch", "Found a shape containing curves, triangulating")+"\n")
+                        "Found a shape containing curves, triangulating\n")
                     break
     elif isinstance(shape, Mesh.Mesh):
         mesh = shape

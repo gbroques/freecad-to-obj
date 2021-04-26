@@ -5,3 +5,4 @@ dependencies:
   - freecad
   - pytest
   - pytest-cov
+  - autopep8
