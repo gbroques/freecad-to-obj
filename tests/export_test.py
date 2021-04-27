@@ -96,8 +96,8 @@ class FreeCADToObjExportTest(unittest.TestCase):
         cube_document_path = test_package_path.joinpath('Cube.FCStd')
         cube_document.saveAs(str(cube_document_path))
 
-        link_document = App.newDocument('CubeLink')
-        link_document_path = test_package_path.joinpath('LinkCube.FCStd')
+        link_document = App.newDocument('Link')
+        link_document_path = test_package_path.joinpath('Link.FCStd')
         link_document.saveAs(str(link_document_path))
         link = link_document.addObject('App::Link', 'Link')
         link.setLink(box)
@@ -151,6 +151,34 @@ class FreeCADToObjExportTest(unittest.TestCase):
         obj_file_contents = freecad_to_obj.export([sphere])
 
         self.assertEqual(obj_file_contents, expected)
+
+    def test_export_with_sphere_link(self):
+        test_package_path = Path(__file__).parent
+
+        sphere_document = App.newDocument('Sphere')
+        sphere = sphere_document.addObject('Part::Sphere','Sphere')
+        sphere.Label = 'Sphere'
+        sphere_document_path = test_package_path.joinpath('Sphere.FCStd')
+        sphere_document.saveAs(str(sphere_document_path))
+
+        link_document = App.newDocument('Link')
+        link_document_path = test_package_path.joinpath('Link.FCStd')
+        link_document.saveAs(str(link_document_path))
+        link = link_document.addObject('App::Link', 'Link')
+        link.setLink(sphere)
+        link.Label = sphere.Label
+
+        link_document.recompute()
+
+        with open(os.path.join(os.path.dirname(__file__), 'sphere.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([link])
+
+        self.assertEqual(obj_file_contents, expected)
+
+        sphere_document_path.unlink()
+        link_document_path.unlink()
 
 
 if __name__ == '__main__':
