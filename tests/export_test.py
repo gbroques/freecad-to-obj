@@ -194,6 +194,40 @@ class FreeCADToObjExportTest(unittest.TestCase):
         sphere_document_path.unlink()
         link_document_path.unlink()
 
+    def test_export_with_sphere_link_transform_true(self):
+        test_package_path = Path(__file__).parent
+
+        sphere_document = App.newDocument('Sphere')
+        sphere = sphere_document.addObject('Part::Sphere','Sphere')
+        sphere.Label = 'Sphere'
+        sphere.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        sphere_document.recompute()
+
+        sphere_document_path = test_package_path.joinpath('Sphere.FCStd')
+        sphere_document.saveAs(str(sphere_document_path))
+
+        link_document = App.newDocument('Link')
+        link_document_path = test_package_path.joinpath('Link.FCStd')
+        link_document.saveAs(str(link_document_path))
+        link = link_document.addObject('App::Link', 'Link')
+        link.setLink(sphere)
+        link.Label = sphere.Label
+        link.LinkTransform = True
+
+        link_document.recompute()
+
+        with open(os.path.join(os.path.dirname(__file__), 'translated_sphere.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([link])
+
+        self.assertEqual(obj_file_contents, expected)
+
+        sphere_document_path.unlink()
+        link_document_path.unlink()
+
+
 
 if __name__ == '__main__':
     unittest.main()
