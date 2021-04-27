@@ -80,8 +80,9 @@ def _getIndices(obj, shape, offsetv, offsetvn):
     if isinstance(shape, Part.Shape):
         for e in shape.Edges:
             try:
-                # e.Curve raises TypeError: 'undefined curve type' for 2 out of 3 edges in Sphere
-                # the one working edge curve in a spere is a "Circle" curve edge.
+                # e.Curve raises TypeError: 'undefined curve type' for 2 out of 3 edges in a Sphere.
+                # The one working edge curve in a sphere is a "Circle" curve edge, with Degenerated set to False.
+                # In the 'undefined curve type' edges, the two poles of the sphere, have Degenerated property set to True.
                 if not isinstance(e.Curve, Part.LineSegment):
                     if not curves:
                         if obj.isDerivedFrom("App::Link"):
