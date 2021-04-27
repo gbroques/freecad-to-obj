@@ -80,6 +80,8 @@ def _getIndices(obj, shape, offsetv, offsetvn):
     if isinstance(shape, Part.Shape):
         for e in shape.Edges:
             try:
+                # e.Curve raises TypeError: 'undefined curve type' for 2 out of 3 edges in Sphere
+                # the one working edge curve in a spere is a "Circle" curve edge.
                 if not isinstance(e.Curve, Part.LineSegment):
                     if not curves:
                         if obj.isDerivedFrom("App::Link"):
@@ -96,8 +98,7 @@ def _getIndices(obj, shape, offsetv, offsetvn):
                         FreeCAD.Console.PrintWarning(
                             "Found a shape containing curves, triangulating\n")
                         break
-            # Cylinder Curves are instance of Part.Circle and Part.Line
-            except Exception:  # unimplemented curve type
+            except TypeError:  # unimplemented curve type
                 if obj.isDerivedFrom("App::Link"):
                     if obj.Shape:
                         myshape = obj.Shape.copy(False)
