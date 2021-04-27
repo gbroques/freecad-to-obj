@@ -152,6 +152,20 @@ class FreeCADToObjExportTest(unittest.TestCase):
 
         self.assertEqual(obj_file_contents, expected)
 
+    def test_export_with_translated_sphere(self):
+        document = App.newDocument()
+        sphere = document.addObject('Part::Sphere','Sphere')
+        sphere.Label = 'Sphere'
+        sphere.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        document.recompute()
+        with open(os.path.join(os.path.dirname(__file__), 'translated_sphere.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([sphere])
+
+        self.assertEqual(obj_file_contents, expected)
+
     def test_export_with_sphere_link(self):
         test_package_path = Path(__file__).parent
 
