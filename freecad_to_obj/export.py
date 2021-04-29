@@ -24,7 +24,6 @@ Modifications:
 import Draft
 import FreeCAD as App
 import MeshPart
-import Part
 
 __all__ = ['export']
 
