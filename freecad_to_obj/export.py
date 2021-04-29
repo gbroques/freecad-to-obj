@@ -15,7 +15,7 @@ Modifications:
   * Return .obj file contents as string instead of writing to a file.
   * Removed support of experimental high-resolution Arch feature.
     * See: https://forum.freecadweb.org/viewtopic.php?t=21144
-  * Removed any coed paths requiring FreeCAD's GUI to be active.
+  * Removed any code paths requiring FreeCAD's GUI to be active.
     * This script is meant to be ran from a server environment only.
   * Remove support for meshes and "Mesh Feature" objects.
     * See: https://wiki.freecadweb.org/Mesh_Feature
