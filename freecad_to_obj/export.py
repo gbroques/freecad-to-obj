@@ -62,7 +62,7 @@ def _get_indices(obj, offsetv, offsetvn):
     flist = []
 
     myshape = None
-    if obj.isDerivedFrom("App::Link"):
+    if obj.isDerivedFrom('App::Link'):
         myshape = obj.LinkedObject.Shape.copy(False)
         if obj.LinkTransform is True:
             myshape.Placement = obj.LinkPlacement * obj.LinkedObject.Placement
