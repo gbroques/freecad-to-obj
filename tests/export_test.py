@@ -4,6 +4,8 @@ from pathlib import Path
 
 import FreeCAD as App
 import freecad_to_obj
+import Part
+import Sketcher
 from FreeCAD import Placement, Rotation, Vector
 
 
@@ -118,7 +120,7 @@ class FreeCADToObjExportTest(unittest.TestCase):
 
     def test_export_with_cylinder(self):
         document = App.newDocument()
-        cylinder = document.addObject('Part::Cylinder','Cylinder')
+        cylinder = document.addObject('Part::Cylinder', 'Cylinder')
         cylinder.Label = 'Cylinder'
         document.recompute()
         with open(os.path.join(os.path.dirname(__file__), 'cylinder.obj')) as f:
@@ -130,7 +132,7 @@ class FreeCADToObjExportTest(unittest.TestCase):
 
     def test_export_with_torus(self):
         document = App.newDocument()
-        torus = document.addObject('Part::Torus','Torus')
+        torus = document.addObject('Part::Torus', 'Torus')
         torus.Label = 'Torus'
         document.recompute()
         with open(os.path.join(os.path.dirname(__file__), 'torus.obj')) as f:
@@ -142,7 +144,7 @@ class FreeCADToObjExportTest(unittest.TestCase):
 
     def test_export_with_sphere(self):
         document = App.newDocument()
-        sphere = document.addObject('Part::Sphere','Sphere')
+        sphere = document.addObject('Part::Sphere', 'Sphere')
         sphere.Label = 'Sphere'
         document.recompute()
         with open(os.path.join(os.path.dirname(__file__), 'sphere.obj')) as f:
@@ -154,7 +156,7 @@ class FreeCADToObjExportTest(unittest.TestCase):
 
     def test_export_with_translated_sphere(self):
         document = App.newDocument()
-        sphere = document.addObject('Part::Sphere','Sphere')
+        sphere = document.addObject('Part::Sphere', 'Sphere')
         sphere.Label = 'Sphere'
         sphere.Placement = Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
@@ -170,7 +172,7 @@ class FreeCADToObjExportTest(unittest.TestCase):
         test_package_path = Path(__file__).parent
 
         sphere_document = App.newDocument('Sphere')
-        sphere = sphere_document.addObject('Part::Sphere','Sphere')
+        sphere = sphere_document.addObject('Part::Sphere', 'Sphere')
         sphere.Label = 'Sphere'
         sphere_document_path = test_package_path.joinpath('Sphere.FCStd')
         sphere_document.saveAs(str(sphere_document_path))
@@ -198,7 +200,7 @@ class FreeCADToObjExportTest(unittest.TestCase):
         test_package_path = Path(__file__).parent
 
         sphere_document = App.newDocument('Sphere')
-        sphere = sphere_document.addObject('Part::Sphere','Sphere')
+        sphere = sphere_document.addObject('Part::Sphere', 'Sphere')
         sphere.Label = 'Sphere'
         sphere.Placement = Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
@@ -227,6 +229,29 @@ class FreeCADToObjExportTest(unittest.TestCase):
         sphere_document_path.unlink()
         link_document_path.unlink()
 
+    def test_export_with_part_design_body(self):
+        test_package_path = Path(__file__).parent
+
+        document = App.newDocument('PartDesign')
+        body = document.addObject('PartDesign::Body', 'Body')
+        sketch = body.newObject('Sketcher::SketchObject', 'Sketch')
+        sketch.Support = (document.getObject('XY_Plane'), [''])
+        sketch.MapMode = 'FlatFace'
+        sketch.addGeometry(Part.Circle(App.Vector(0, 0, 0),
+                           App.Vector(0, 0, 1), 10), False)
+        sketch.addConstraint(Sketcher.Constraint('Coincident', 0, 3, -1, 1))
+
+        pad = body.newObject('PartDesign::Pad', 'Pad')
+        pad.Profile = sketch
+        pad.Length = 10.0
+        document.recompute()
+
+        with open(os.path.join(os.path.dirname(__file__), 'body.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([body])
+
+        self.assertEqual(obj_file_contents, expected)
 
 
 if __name__ == '__main__':
