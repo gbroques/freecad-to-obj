@@ -17,27 +17,19 @@ Modifications:
     * See: https://forum.freecadweb.org/viewtopic.php?t=21144
   * Removed any coed paths requiring FreeCAD's GUI to be active.
     * This script is meant to be ran from a server environment only.
-  * TODO: Should we remove support for "Mesh Feature" objects?
+  * Remove support for meshes and "Mesh Feature" objects.
     * See: https://wiki.freecadweb.org/Mesh_Feature
 """
 
-import os
-import sys
-
 import Draft
-import DraftGeomUtils
-import FreeCAD
-import Mesh
+import FreeCAD as App
 import MeshPart
 import Part
-
-
-p = Draft.precision()
 
 __all__ = ['export']
 
 
-def export(exportList) -> str:
+def export(export_list) -> str:
     """
     Transforms a list of objects into a Wavefront .obj file contents.
     """
@@ -46,151 +38,63 @@ def export(exportList) -> str:
     offsetv = 1
     offsetvn = 1
 
-    objects = _ungroup_objects(exportList)
+    objects = _ungroup_objects(export_list)
     for obj in objects:
-        if obj.isDerivedFrom("Part::Feature") or obj.isDerivedFrom("Mesh::Feature") or obj.isDerivedFrom("App::Link"):
-            if hasattr(obj, "Shape") and obj.Shape:
-                vlist, vnlist, elist, flist = _getIndices(
-                    obj, obj.Shape, offsetv, offsetvn)
-            elif hasattr(obj, "Mesh") and obj.Mesh:
-                vlist, vnlist, elist, flist = _getIndices(
-                    obj, obj.Mesh, offsetv, offsetvn)
-            if vlist is None:
-                FreeCAD.Console.PrintError(
-                    "Unable to export object " + obj.Label + ". Skipping.\n")
-            else:
-                offsetv += len(vlist)
-                offsetvn += len(vnlist)
-                lines.append('o ' + obj.Label)
+        if obj.isDerivedFrom('Part::Feature') or obj.isDerivedFrom('App::Link'):
+            vlist, vnlist, flist = _get_indices(obj, offsetv, offsetvn)
 
-                for v in vlist:
-                    lines.append('v' + v)
-                for vn in vnlist:
-                    lines.append('vn' + vn)
-                for e in elist:
-                    lines.append('l' + e)
-                for f in flist:
-                    lines.append('f' + f)
+            offsetv += len(vlist)
+            offsetvn += len(vnlist)
+            lines.append('o ' + obj.Label)
+
+            for v in vlist:
+                lines.append('v ' + v)
+            for vn in vnlist:
+                lines.append('vn ' + vn)
+            for f in flist:
+                lines.append('f ' + f)
     return '\n'.join(lines) + '\n'
 
 
-def _getIndices(obj, shape, offsetv, offsetvn):
+def _get_indices(obj, offsetv, offsetvn):
     "returns a list with 2 lists: vertices and face indexes, offset with the given amount"
     vlist = []
     vnlist = []
-    elist = []
     flist = []
-    curves = None
-    mesh = None
 
-    if isinstance(shape, Part.Shape):
-        for e in shape.Edges:
-            try:
-                # e.Curve raises TypeError: 'undefined curve type' for 2 out of 3 edges in a Sphere.
-                # The one working edge curve in a sphere is a "Circle" curve edge, with Degenerated set to False.
-                # In the 'undefined curve type' edges, the two poles of the sphere, have Degenerated property set to True.
-                if not isinstance(e.Curve, Part.LineSegment):
-                    if not curves:
-                        if obj.isDerivedFrom("App::Link"):
-                            myshape = obj.LinkedObject.Shape.copy(False)
-                            if obj.LinkTransform is True:
-                                myshape.Placement = obj.LinkPlacement * obj.LinkedObject.Placement
-                            else:
-                                myshape.Placement = obj.LinkPlacement
-                        else:
-                            myshape = obj.Shape.copy(False)
-                            myshape.Placement = obj.getGlobalPlacement()
-                        mesh = MeshPart.meshFromShape(
-                            Shape=myshape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
-                        FreeCAD.Console.PrintWarning(
-                            "Found a shape containing curves, triangulating\n")
-                        break
-            except TypeError:  # unimplemented curve type
-                if obj.isDerivedFrom("App::Link"):
-                    if obj.Shape:
-                        myshape = obj.Shape.copy(False)
-                        if obj.LinkTransform is True:
-                            myshape.Placement = obj.LinkPlacement * obj.LinkedObject.Placement
-                        else:
-                            myshape.Placement = obj.LinkPlacement
-                    else:
-                        myshape = obj.Shape.copy(False)
-                        myshape.Placement = obj.getGlobalPlacement()
-                    mesh = MeshPart.meshFromShape(
-                        Shape=myshape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
-                    FreeCAD.Console.PrintWarning(
-                        "Found a shape containing curves, triangulating\n")
-                    break
-    elif isinstance(shape, Mesh.Mesh):
-        mesh = shape
-        curves = shape.Topology
-    if mesh:
-        for v in mesh.Topology[0]:
-            vlist.append(" "+str(round(v[0], p))+" " +
-                         str(round(v[1], p))+" "+str(round(v[2], p)))
-
-        for vn in mesh.Facets:
-            vnlist.append(
-                " "+str(vn.Normal[0]) + " " + str(vn.Normal[1]) + " " + str(vn.Normal[2]))
-
-        for i, vn in enumerate(mesh.Topology[1]):
-            flist.append(" "+str(vn[0]+offsetv)+"//"+str(i+offsetvn)+" "+str(
-                vn[1]+offsetv)+"//"+str(i+offsetvn)+" "+str(vn[2]+offsetv)+"//"+str(i+offsetvn))
-    else:
-        if curves:
-            for v in curves[0]:
-                vlist.append(" "+str(round(v.x, p))+" " +
-                             str(round(v.y, p))+" "+str(round(v.z, p)))
-            for f in curves[1]:
-                fi = ""
-                for vi in f:
-                    fi += " " + str(vi + offsetv)
-                flist.append(fi)
+    myshape = None
+    if obj.isDerivedFrom("App::Link"):
+        myshape = obj.LinkedObject.Shape.copy(False)
+        if obj.LinkTransform is True:
+            myshape.Placement = obj.LinkPlacement * obj.LinkedObject.Placement
         else:
-            for v in shape.Vertexes:
-                vlist.append(" "+str(round(v.X, p))+" " +
-                             str(round(v.Y, p))+" "+str(round(v.Z, p)))
-            if not shape.Faces:
-                for e in shape.Edges:
-                    if DraftGeomUtils.geomType(e) == "Line":
-                        ei = " " + \
-                            str(_findVert(e.Vertexes[0],
-                                          shape.Vertexes) + offsetv)
-                        ei += " " + \
-                            str(_findVert(e.Vertexes[-1],
-                                          shape.Vertexes) + offsetv)
-                        elist.append(ei)
-            for f in shape.Faces:
-                if len(f.Wires) > 1:
-                    # if we have holes, we triangulate
-                    tris = f.tessellate(1)
-                    for fdata in tris[1]:
-                        fi = ""
-                        for vi in fdata:
-                            vdata = Part.Vertex(tris[0][vi])
-                            fi += " " + \
-                                str(_findVert(vdata, shape.Vertexes) + offsetv)
-                        flist.append(fi)
-                else:
-                    fi = ""
-                    for e in f.OuterWire.OrderedEdges:
-                        v = e.Vertexes[0]
-                        ind = _findVert(v, shape.Vertexes)
-                        if ind is None:
-                            return None, None, None
-                        fi += " " + str(ind + offsetv)
-                    flist.append(fi)
-    return vlist, vnlist, elist, flist
+            myshape.Placement = obj.LinkPlacement
+    else:
+        myshape = obj.Shape.copy(False)
+        myshape.Placement = obj.getGlobalPlacement()
+    # Triangulates shapes with curves
+    mesh = MeshPart.meshFromShape(
+        Shape=myshape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
+    for v in mesh.Topology[0]:
+        p = Draft.precision()
+        vlist.append(str(round(v[0], p)) + ' ' +
+                     str(round(v[1], p)) + ' ' +
+                     str(round(v[2], p)))
 
+    for vn in mesh.Facets:
+        vnlist.append(str(vn.Normal[0]) + ' ' +
+                      str(vn.Normal[1]) + ' ' +
+                      str(vn.Normal[2]))
 
-def _findVert(aVertex, aList):
-    "finds aVertex in aList, returns index"
-    for i in range(len(aList)):
-        if (round(aVertex.X, p) == round(aList[i].X, p)):
-            if (round(aVertex.Y, p) == round(aList[i].Y, p)):
-                if (round(aVertex.Z, p) == round(aList[i].Z, p)):
-                    return i
-    return None
+    for i, vn in enumerate(mesh.Topology[1]):
+        flist.append(str(vn[0] + offsetv) + '//' +
+                     str(i + offsetvn) + ' ' +
+                     str(vn[1] + offsetv) + '//' +
+                     str(i + offsetvn) + ' ' +
+                     str(vn[2] + offsetv) + '//' +
+                     str(i + offsetvn))
+
+    return vlist, vnlist, flist
 
 
 def _ungroup_objects(objects):
