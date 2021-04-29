@@ -21,6 +21,8 @@ Modifications:
     * See: https://wiki.freecadweb.org/Mesh_Feature
 """
 
+from typing import List, Tuple
+
 import Draft
 import FreeCAD as App
 import MeshPart
@@ -55,8 +57,16 @@ def export(export_list) -> str:
     return '\n'.join(lines) + '\n'
 
 
-def _get_indices(obj, offsetv, offsetvn):
-    "returns a list with 2 lists: vertices and face indexes, offset with the given amount"
+def _get_indices(obj, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str], List[str]]:
+    """
+    Return a tuple containing 3 lists:
+
+        1. vertexes
+        2. vertex normals
+        3. and face indices
+
+    offset with a given amount.
+    """
     vlist = []
     vnlist = []
     flist = []
@@ -96,7 +106,7 @@ def _get_indices(obj, offsetv, offsetvn):
     return vlist, vnlist, flist
 
 
-def _ungroup_objects(objects):
+def _ungroup_objects(objects) -> list:
     ungrouped = []
     for obj in objects:
         if _is_group(obj):
@@ -107,7 +117,7 @@ def _ungroup_objects(objects):
     return ungrouped
 
 
-def _is_group(obj):
+def _is_group(obj) -> bool:
     group_types = {
         'App::DocumentObjectGroup',
         'App::Part'
