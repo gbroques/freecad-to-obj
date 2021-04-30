@@ -297,6 +297,41 @@ class ExportTest(unittest.TestCase):
         cube_document_path.unlink()
         part_document_path.unlink()
 
+    def test_export_with_translated_part_containing_translated_link_to_primitive(self):
+        test_package_path = Path(__file__).parent
+
+        cube_document = App.newDocument('Cube')
+        box = cube_document.addObject('Part::Box', 'Box')
+        box.Label = 'Cube'
+
+        cube_document_path = test_package_path.joinpath('Cube.FCStd')
+        cube_document.saveAs(str(cube_document_path))
+
+        part_document = App.newDocument('Part')
+        part_document_path = test_package_path.joinpath('Part.FCStd')
+        part_document.saveAs(str(part_document_path))
+        box_link = part_document.addObject('App::Link', 'Link')
+        box_link.setLink(box)
+        box_link.Label = box.Label
+        box_link.LinkPlacement = Placement(
+            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
+
+        part = part_document.addObject('App::Part', 'Part')
+        part.addObject(box_link)
+        part.Placement = Placement(
+            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        part_document.recompute()
+
+        with open(os.path.join(os.path.dirname(__file__), 'translated_cube.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([part])
+
+        self.assertEqual(obj_file_contents, expected)
+
+        cube_document_path.unlink()
+        part_document_path.unlink()
+
     def test_export_with_translated_link_to_part_containing_link_to_primitive(self):
         test_package_path = Path(__file__).parent
 
