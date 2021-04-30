@@ -71,19 +71,11 @@ def _get_indices(obj, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str]
     vnlist = []
     flist = []
 
-    myshape = None
-    if obj.isDerivedFrom('App::Link'):
-        myshape = obj.LinkedObject.Shape.copy(False)
-        if obj.LinkTransform is True:
-            myshape.Placement = obj.LinkPlacement * obj.LinkedObject.Placement
-        else:
-            myshape.Placement = obj.LinkPlacement
-    else:
-        myshape = obj.Shape.copy(False)
-        myshape.Placement = obj.getGlobalPlacement()
+    shape = obj.Shape.copy(False)
+
     # Triangulates shapes with curves
     mesh = MeshPart.meshFromShape(
-        Shape=myshape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
+        Shape=shape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
     for v in mesh.Topology[0]:
         p = Draft.precision()
         vlist.append(str(round(v[0], p)) + ' ' +
@@ -106,20 +98,19 @@ def _get_indices(obj, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str]
     return vlist, vnlist, flist
 
 
-def _ungroup_objects(objects) -> list:
+def _ungroup_objects(objects, parent_placement=None) -> list:
     ungrouped = []
     for obj in objects:
-        if _is_group(obj):
-            objs = _ungroup_objects(obj.Group)
+        if parent_placement:
+            obj.Placement = obj.Placement * parent_placement
+
+        if obj.TypeId == 'App::Part':
+            objs = _ungroup_objects(obj.Group, obj.Placement)
+            ungrouped.extend(objs)
+        elif obj.TypeId == 'App::Link':
+            parent_placement = obj.LinkPlacement if obj.LinkTransform is False else None
+            objs = _ungroup_objects([obj.LinkedObject], parent_placement)
             ungrouped.extend(objs)
         else:
             ungrouped.append(obj)
     return ungrouped
-
-
-def _is_group(obj) -> bool:
-    group_types = {
-        'App::DocumentObjectGroup',
-        'App::Part'
-    }
-    return obj.TypeId in group_types

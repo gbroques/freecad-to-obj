@@ -253,6 +253,82 @@ class FreeCADToObjExportTest(unittest.TestCase):
 
         self.assertEqual(obj_file_contents, expected)
 
+    def test_export_with_translated_part_containing_link(self):
+        test_package_path = Path(__file__).parent
+
+        cube_document = App.newDocument('Cube')
+        box = cube_document.addObject('Part::Box', 'Box')
+        box.Label = 'Cube'
+
+        cube_document_path = test_package_path.joinpath('Cube.FCStd')
+        cube_document.saveAs(str(cube_document_path))
+
+        part_document = App.newDocument('Part')
+        part_document_path = test_package_path.joinpath('Part.FCStd')
+        part_document.saveAs(str(part_document_path))
+        box_link = part_document.addObject('App::Link', 'Link')
+        box_link.setLink(box)
+        box_link.Label = box.Label
+
+        part = part_document.addObject('App::Part', 'Part')
+        part.addObject(box_link)
+        part.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        part_document.recompute()
+
+        with open(os.path.join(os.path.dirname(__file__), 'translated_cube.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([part])
+
+        self.assertEqual(obj_file_contents, expected)
+
+        cube_document_path.unlink()
+        part_document_path.unlink()
+
+    def test_export_with_translated_link_to_part_to_link(self):
+        test_package_path = Path(__file__).parent
+
+        cube_document = App.newDocument('Cube')
+        box = cube_document.addObject('Part::Box', 'Box')
+        box.Label = 'Cube'
+
+        cube_document_path = test_package_path.joinpath('Cube.FCStd')
+        cube_document.saveAs(str(cube_document_path))
+
+        part_document = App.newDocument('Part')
+        part_document_path = test_package_path.joinpath('Part.FCStd')
+        part_document.saveAs(str(part_document_path))
+
+        box_link = part_document.addObject('App::Link', 'Link')
+        box_link.setLink(box)
+        box_link.Label = box.Label
+
+        part = part_document.addObject('App::Part', 'Part')
+        part.addObject(box_link)
+        part_document.recompute()
+
+        part_link_document = App.newDocument('PartLink')
+        part_link_document_path = test_package_path.joinpath('PartLink.FCStd')
+        part_link_document.saveAs(str(part_link_document_path))
+
+        part_link = part_link_document.addObject('App::Link', 'Link')
+        part_link.setLink(part)
+        part_link.Label = part.Label
+        part_link.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        part_link_document.recompute()
+
+        with open(os.path.join(os.path.dirname(__file__), 'translated_cube.obj')) as f:
+            expected = f.read()
+
+        obj_file_contents = freecad_to_obj.export([part_link])
+
+        self.assertEqual(obj_file_contents, expected)
+
+        cube_document_path.unlink()
+        part_document_path.unlink()
+        part_link_document_path.unlink()
 
 if __name__ == '__main__':
     unittest.main()
