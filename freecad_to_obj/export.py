@@ -39,10 +39,13 @@ def export(export_list) -> str:
     offsetv = 1
     offsetvn = 1
 
-    objects = _ungroup_objects(export_list)
-    for obj in objects:
-        if obj.isDerivedFrom('Part::Feature') or obj.isDerivedFrom('App::Link'):
-            vlist, vnlist, flist = _get_indices(obj, offsetv, offsetvn)
+    object_placement_tuples = _ungroup_objects(export_list)
+    for obj, placement in object_placement_tuples:
+        if obj.isDerivedFrom('Part::Feature'):
+            shape = obj.Shape.copy(False)
+            shape.Placement = placement
+
+            vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn)
 
             offsetv += len(vlist)
             offsetvn += len(vnlist)
@@ -57,7 +60,7 @@ def export(export_list) -> str:
     return '\n'.join(lines) + '\n'
 
 
-def _get_indices(obj, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str], List[str]]:
+def _get_indices(shape, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str], List[str]]:
     """
     Return a tuple containing 3 lists:
 
@@ -70,8 +73,6 @@ def _get_indices(obj, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str]
     vlist = []
     vnlist = []
     flist = []
-
-    shape = obj.Shape.copy(False)
 
     # Triangulates shapes with curves
     mesh = MeshPart.meshFromShape(
@@ -98,26 +99,23 @@ def _get_indices(obj, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str]
     return vlist, vnlist, flist
 
 
-def _ungroup_objects(objects, placement_strategy=None) -> list:
+def _ungroup_objects(objects, parent_placement=None, chain=True) -> list:
     ungrouped = []
     for obj in objects:
-        if placement_strategy:
-            obj.Placement = placement_strategy(obj.Placement)
+        placement = obj.Placement
+        if parent_placement:
+            if chain:
+                placement = placement * parent_placement
+            else:
+                placement = parent_placement
 
         if obj.TypeId == 'App::Part':
-            def link_placement_strategy(child_placement):
-                return child_placement * obj.Placement
-            objs = _ungroup_objects(obj.Group, link_placement_strategy)
+            objs = _ungroup_objects(obj.Group, placement, True)
             ungrouped.extend(objs)
         elif obj.TypeId == 'App::Link':
-            def link_placement_strategy(child_placement):
-                if obj.LinkTransform:
-                    return child_placement * obj.Placement
-                else:
-                    return obj.LinkPlacement
             objs = _ungroup_objects(
-                [obj.LinkedObject], link_placement_strategy)
+                [obj.LinkedObject], placement, obj.LinkTransform)
             ungrouped.extend(objs)
         else:
-            ungrouped.append(obj)
+            ungrouped.append((obj, placement))
     return ungrouped
