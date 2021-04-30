@@ -264,7 +264,7 @@ class ExportTest(unittest.TestCase):
 
         self.assertEqual(obj_file_contents, expected)
 
-    def test_export_with_translated_part_containing_link(self):
+    def test_export_with_translated_part_containing_link_to_primitive(self):
         test_package_path = Path(__file__).parent
 
         cube_document = App.newDocument('Cube')
@@ -297,7 +297,7 @@ class ExportTest(unittest.TestCase):
         cube_document_path.unlink()
         part_document_path.unlink()
 
-    def test_export_with_translated_link_to_part_to_link(self):
+    def test_export_with_translated_link_to_part_containing_link_to_primitive(self):
         test_package_path = Path(__file__).parent
 
         cube_document = App.newDocument('Cube')
