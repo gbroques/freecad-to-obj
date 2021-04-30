@@ -98,18 +98,25 @@ def _get_indices(obj, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str]
     return vlist, vnlist, flist
 
 
-def _ungroup_objects(objects, parent_placement=None) -> list:
+def _ungroup_objects(objects, placement_strategy=None) -> list:
     ungrouped = []
     for obj in objects:
-        if parent_placement:
-            obj.Placement = obj.Placement * parent_placement
+        if placement_strategy:
+            obj.Placement = placement_strategy(obj.Placement)
 
         if obj.TypeId == 'App::Part':
-            objs = _ungroup_objects(obj.Group, obj.Placement)
+            def link_placement_strategy(child_placement):
+                return child_placement * obj.Placement
+            objs = _ungroup_objects(obj.Group, link_placement_strategy)
             ungrouped.extend(objs)
         elif obj.TypeId == 'App::Link':
-            parent_placement = obj.LinkPlacement if obj.LinkTransform is False else None
-            objs = _ungroup_objects([obj.LinkedObject], parent_placement)
+            def link_placement_strategy(child_placement):
+                if obj.LinkTransform:
+                    return child_placement * obj.Placement
+                else:
+                    return obj.LinkPlacement
+            objs = _ungroup_objects(
+                [obj.LinkedObject], link_placement_strategy)
             ungrouped.extend(objs)
         else:
             ungrouped.append(obj)
