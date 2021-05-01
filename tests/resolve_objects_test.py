@@ -2,7 +2,7 @@ import os
 import unittest
 
 import FreeCAD as App
-from FreeCAD import Placement
+from FreeCAD import Placement, Rotation, Vector
 from freecad_to_obj.resolve_objects import resolve_objects
 
 
@@ -21,6 +21,23 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
         self.assertEqual(resolved_primitive.Name, 'Box')
         self.assertPlacementEqual(placement, primitive.Placement)
+
+    def test_resolve_objects_with_translated_primitive(self):
+        document = App.newDocument()
+        translated_primitive = document.addObject('Part::Box', 'Box')
+        translated_primitive.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        document.recompute()
+
+        resolved_objects = resolve_objects([translated_primitive])
+
+        self.assertEqual(len(resolved_objects), 1)
+
+        resolved_primitive, placement = resolved_objects[0]
+        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
+        self.assertEqual(resolved_primitive.Name, 'Box')
+        self.assertPlacementEqual(placement, Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0)))
 
     def assertPlacementEqual(self, a, b):
         self.assertAlmostEqual(a.Base.x, b.Base.x, places=3)
