@@ -1,116 +1,41 @@
-import os
 import unittest
 
-import FreeCAD as App
 from FreeCAD import Placement, Rotation, Vector
 from freecad_to_obj.resolve_objects import resolve_objects
+
+from tests.assembler import Assembler
 
 
 class ResolveObjectsTest(unittest.TestCase):
 
-    def test_resolve_objects_with_primitive(self):
-        document = App.newDocument()
-        primitive = document.addObject('Part::Box', 'Box')
-        document.recompute()
+    def test_resolve_objects_with_shape(self):
+        shape = (Assembler()
+                 .shape('Part::Box', 'Box', Placement(Vector(10, 0, 0), Rotation()))
+                 .assemble())
 
-        resolved_objects = resolve_objects([primitive])
-
-        self.assertEqual(len(resolved_objects), 1)
-
-        resolved_primitive, placement = resolved_objects[0]
-        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
-        self.assertEqual(resolved_primitive.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement())
-
-    def test_resolve_objects_with_translated_primitive(self):
-        document = App.newDocument()
-        translated_primitive = document.addObject('Part::Box', 'Box')
-        translated_primitive.Placement = Placement(
-            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
-        document.recompute()
-
-        resolved_objects = resolve_objects([translated_primitive])
+        resolved_objects = resolve_objects([shape])
 
         self.assertEqual(len(resolved_objects), 1)
 
-        resolved_primitive, placement = resolved_objects[0]
-        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
-        self.assertEqual(resolved_primitive.Name, 'Box')
+        resolved_shape, placement = resolved_objects[0]
+        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
+        self.assertEqual(resolved_shape.Name, 'Box')
         self.assertPlacementEqual(placement, Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0)))
 
-    def test_resolve_objects_with_part_containing_primitive(self):
-        document = App.newDocument()
-        primitive = document.addObject('Part::Box', 'Box')
-        part = document.addObject('App::Part', 'Part')
-        part.addObject(primitive)
-        document.recompute()
+    def test_resolve_objects_with_part_containing_shape(self):
+        part = (Assembler()
+                .part_containing(Placement(Vector(5, 0, 0), Rotation()))
+                .shape('Part::Box', 'Box', Placement(Vector(5, 0, 0), Rotation()))
+                .assemble())
 
         resolved_objects = resolve_objects([part])
 
         self.assertEqual(len(resolved_objects), 1)
 
-        resolved_primitive, placement = resolved_objects[0]
-        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
-        self.assertEqual(resolved_primitive.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement())
-
-    def test_resolve_objects_with_part_containing_translated_primitive(self):
-        document = App.newDocument()
-        translated_primitive = document.addObject('Part::Box', 'Box')
-        translated_primitive.Placement = Placement(
-            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
-        part = document.addObject('App::Part', 'Part')
-        part.addObject(translated_primitive)
-        document.recompute()
-
-        resolved_objects = resolve_objects([part])
-
-        self.assertEqual(len(resolved_objects), 1)
-
-        resolved_primitive, placement = resolved_objects[0]
-        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
-        self.assertEqual(resolved_primitive.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
-            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0)))
-
-    def test_resolve_objects_with_translated_part_containing_primitive(self):
-        document = App.newDocument()
-        primitive = document.addObject('Part::Box', 'Box')
-        translated_part = document.addObject('App::Part', 'Part')
-        translated_part.Placement = Placement(
-            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
-        translated_part.addObject(primitive)
-        document.recompute()
-
-        resolved_objects = resolve_objects([translated_part])
-
-        self.assertEqual(len(resolved_objects), 1)
-
-        resolved_primitive, placement = resolved_objects[0]
-        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
-        self.assertEqual(resolved_primitive.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
-            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0)))
-
-    def test_resolve_objects_with_translated_part_containing_translated_primitive(self):
-        document = App.newDocument()
-        translated_primitive = document.addObject('Part::Box', 'Box')
-        translated_primitive.Placement = Placement(
-            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
-        translated_part = document.addObject('App::Part', 'Part')
-        translated_part.Placement = Placement(
-            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
-        translated_part.addObject(translated_primitive)
-        document.recompute()
-
-        resolved_objects = resolve_objects([translated_part])
-
-        self.assertEqual(len(resolved_objects), 1)
-
-        resolved_primitive, placement = resolved_objects[0]
-        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
-        self.assertEqual(resolved_primitive.Name, 'Box')
+        resolved_shape, placement = resolved_objects[0]
+        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
+        self.assertEqual(resolved_shape.Name, 'Box')
         self.assertPlacementEqual(placement, Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0)))
 
