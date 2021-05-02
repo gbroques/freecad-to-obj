@@ -22,6 +22,13 @@ class Assembler:
         self.objects.append(link)
         return self
 
+    def transform_link_to(self, placement):
+        link = self.document.addObject('App::Link', 'Link')
+        link.Placement = placement
+        link.LinkTransform = True
+        self.objects.append(link)
+        return self
+
     def shape(self, object_type, name, placement):
         shape = self.document.addObject(object_type, name)
         shape.Placement = placement
