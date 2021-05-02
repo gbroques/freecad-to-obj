@@ -16,6 +16,12 @@ class Assembler:
         self.objects.append(part)
         return self
 
+    def link_to(self, placement):
+        link = self.document.addObject('App::Link', 'Link')
+        link.Placement = placement
+        self.objects.append(link)
+        return self
+
     def shape(self, object_type, name, placement):
         shape = self.document.addObject(object_type, name)
         shape.Placement = placement
@@ -27,6 +33,8 @@ class Assembler:
             if second is not None:
                 if first.TypeId == 'App::Part':
                     first.addObject(second)
+                elif first.TypeId == 'App::Link':
+                    first.setLink(second)
         self.document.recompute()
         return self.objects[0] if len(self.objects) > 0 else None
 
