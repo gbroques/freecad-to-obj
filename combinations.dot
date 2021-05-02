@@ -5,33 +5,33 @@ strict digraph Combinations {
     
     2 [label="Part"]
     3 [label="Link"]
-    4 [label="Transformed Link"]
+    4 [label="Transform Link"]
 
     5 [label="Part"]
     6 [label="Link"]
-    7 [label="Transformed Link"]
+    7 [label="Transform Link"]
 
     8 [label="Part"]
     9 [label="Link"]
-    10 [label="Transformed Link"]
+    10 [label="Transform Link"]
 
     11 [label="Part"]
     12 [label="Link"]
-    13 [label="Transformed Link"]
+    13 [label="Transform Link"]
 
-    2 -> 1 [label="contains"]
+    2 -> 1 [label="containing"]
     3 -> 1 [label="to"]
     4 -> 1 [label="to"]
 
-    5 -> 2 [label="contains"]
+    5 -> 2 [label="containing"]
     6 -> 2 [label="to"]
     7 -> 2 [label="to"]
 
-    8 -> 3 [label="contains"]
+    8 -> 3 [label="containing"]
     9 -> 3 [label="to"]
     10 -> 3 [label="to"]
 
-    11 -> 4 [label="contains"]
+    11 -> 4 [label="containing"]
     12 -> 4 [label="to"]
     13 -> 4 [label="to"]
 
