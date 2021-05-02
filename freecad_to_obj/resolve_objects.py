@@ -3,9 +3,9 @@ from typing import List, Tuple
 from FreeCAD import Placement
 
 
-def resolve_objects(objects,
-                    parent_placement=None,
-                    chain=True) -> List[Tuple[object, Placement]]:
+def resolve_objects(objects: List[object],
+                    parent_placement: Placement = None,
+                    chain: bool = True) -> List[Tuple[object, Placement]]:
     resolved = []
     for obj in objects:
         placement = obj.Placement
