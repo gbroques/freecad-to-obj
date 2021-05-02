@@ -11,7 +11,7 @@ def resolve_objects(objects: List[object],
         placement = obj.Placement
         if parent_placement:
             if chain:
-                placement = placement * parent_placement
+                placement = parent_placement * placement
             else:
                 placement = parent_placement
 

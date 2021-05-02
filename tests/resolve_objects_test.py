@@ -1,5 +1,6 @@
 import unittest
 
+import FreeCAD as App
 from FreeCAD import Placement, Rotation, Vector
 from freecad_to_obj.resolve_objects import resolve_objects
 
@@ -223,6 +224,38 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(resolved_shape.Name, 'Box')
         self.assertPlacementEqual(placement, Placement(
             Vector(18, 0, 0), Rotation()))
+
+    def test_resolve_objects_with_rotated_part_containing_shapes(self):
+        document = App.newDocument()
+        cylinder = document.addObject('Part::Cylinder', 'Cylinder')
+        cylinder.Height = 10
+        cone = document.addObject('Part::Cone', 'Cone')
+        cone.Radius2 = 0
+        cone.Height = 4
+        cone.Placement = Placement(
+            Vector(0, 0, 10), Rotation())
+
+        part = document.addObject('App::Part', 'Part')
+        part.addObject(cylinder)
+        part.addObject(cone)
+        part.Placement = Placement(
+            Vector(), Rotation(Vector(0, 1, 0), 90))
+
+        resolved_objects = resolve_objects([part])
+
+        self.assertEqual(len(resolved_objects), 2)
+
+        resolved_cylinder, cylinder_placement = resolved_objects[0]
+        self.assertEqual(resolved_cylinder.TypeId, 'Part::Cylinder')
+        self.assertEqual(resolved_cylinder.Name, 'Cylinder')
+        self.assertPlacementEqual(cylinder_placement, Placement(
+            Vector(), Rotation(Vector(0, 1, 0), 90)))
+
+        resolved_cone, cone_placement = resolved_objects[1]
+        self.assertEqual(resolved_cone.TypeId, 'Part::Cone')
+        self.assertEqual(resolved_cone.Name, 'Cone')
+        self.assertPlacementEqual(cone_placement, Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 1, 0), 90)))
 
     def assertPlacementEqual(self, a, b):
         self.assertAlmostEqual(a.Base.x, b.Base.x, places=3)
