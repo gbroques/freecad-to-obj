@@ -93,6 +93,27 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertPlacementEqual(placement, Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0)))
 
+    def test_resolve_objects_with_translated_part_containing_translated_primitive(self):
+        document = App.newDocument()
+        translated_primitive = document.addObject('Part::Box', 'Box')
+        translated_primitive.Placement = Placement(
+            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        translated_part = document.addObject('App::Part', 'Part')
+        translated_part.Placement = Placement(
+            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        translated_part.addObject(translated_primitive)
+        document.recompute()
+
+        resolved_objects = resolve_objects([translated_part])
+
+        self.assertEqual(len(resolved_objects), 1)
+
+        resolved_primitive, placement = resolved_objects[0]
+        self.assertEqual(resolved_primitive.TypeId, 'Part::Box')
+        self.assertEqual(resolved_primitive.Name, 'Box')
+        self.assertPlacementEqual(placement, Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0)))
+
     def assertPlacementEqual(self, a, b):
         self.assertAlmostEqual(a.Base.x, b.Base.x, places=3)
         self.assertAlmostEqual(a.Base.y, b.Base.y, places=3)
