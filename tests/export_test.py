@@ -490,6 +490,26 @@ class ExportTest(unittest.TestCase):
 
         self.assertEqual(obj_file_contents, expected)
 
+    def test_export_with_object_name_getter(self):
+        document = App.newDocument()
+        box = document.addObject('Part::Box', 'CubeLink')
+        box.Label = 'Cube'
+        box.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        document.recompute()
+
+        obj_filename = 'link_to_translated_cube.obj'
+        with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
+            expected = f.read()
+
+        def object_name_getter(obj: object) -> str:
+            return obj.Name
+
+        obj_file_contents = freecad_to_obj.export(
+            [box], object_name_getter=object_name_getter)
+
+        self.assertEqual(obj_file_contents, expected)
+
 
 if __name__ == '__main__':
     unittest.main()
