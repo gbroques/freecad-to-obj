@@ -411,7 +411,7 @@ class ExportTest(unittest.TestCase):
         part_document_path.unlink()
         part_link_document_path.unlink()
 
-    def test_export_with_keep_unresolved_part(self):
+    def test_export_with_keep_unresolved_part_containing_primitive(self):
         document = App.newDocument()
         box = document.addObject('Part::Box', 'Box')
         box.Label = 'Cube'
@@ -433,6 +433,31 @@ class ExportTest(unittest.TestCase):
             return obj.Name == 'Part'
 
         obj_file_contents = freecad_to_obj.export([part], keep_unresolved=keep_unresolved)
+
+        self.assertEqual(obj_file_contents, expected)
+
+    def test_export_with_keep_unresolved_link_to_primitive(self):
+        document = App.newDocument()
+        box = document.addObject('Part::Box', 'Box')
+        box.Label = 'Cube'
+        box.Placement = Placement(
+            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
+
+        link = document.addObject('App::Link', 'Link')
+        link.Label = 'CubeLink'
+        link.setLink(box)
+        link.Placement = Placement(
+            Vector(10, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        document.recompute()
+
+        obj_filename = 'link_to_translated_cube.obj'
+        with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
+            expected = f.read()
+
+        def keep_unresolved(obj: object) -> bool:
+            return obj.Label == 'CubeLink'
+
+        obj_file_contents = freecad_to_obj.export([link], keep_unresolved=keep_unresolved)
 
         self.assertEqual(obj_file_contents, expected)
 
