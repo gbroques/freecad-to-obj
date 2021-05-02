@@ -140,13 +140,13 @@ class ResolveObjectsTest(unittest.TestCase):
             Vector(8, 0, 0), Rotation()))
 
     def test_resolve_objects_with_link_to_link_to_shape(self):
-        part = (Assembler()
+        link = (Assembler()
                 .link_to(Placement(Vector(7, 0, 0), Rotation()))
                 .link_to(Placement(Vector(1, 0, 0), Rotation()))
                 .shape('Part::Box', 'Box', Placement(Vector(10, 0, 0), Rotation()))
                 .assemble())
 
-        resolved_objects = resolve_objects([part])
+        resolved_objects = resolve_objects([link])
 
         self.assertEqual(len(resolved_objects), 1)
 
@@ -157,9 +157,26 @@ class ResolveObjectsTest(unittest.TestCase):
             Vector(7, 0, 0), Rotation()))
 
     def test_resolve_objects_with_transform_link_to_link_to_shape(self):
+        transform_link = (Assembler()
+                          .transform_link_to(Placement(Vector(7, 0, 0), Rotation()))
+                          .link_to(Placement(Vector(1, 0, 0), Rotation()))
+                          .shape('Part::Box', 'Box', Placement(Vector(10, 0, 0), Rotation()))
+                          .assemble())
+
+        resolved_objects = resolve_objects([transform_link])
+
+        self.assertEqual(len(resolved_objects), 1)
+
+        resolved_shape, placement = resolved_objects[0]
+        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
+        self.assertEqual(resolved_shape.Name, 'Box')
+        self.assertPlacementEqual(placement, Placement(
+            Vector(8, 0, 0), Rotation()))
+
+    def test_resolve_objects_with_part_containing_transform_link_to_shape(self):
         part = (Assembler()
-                .transform_link_to(Placement(Vector(7, 0, 0), Rotation()))
-                .link_to(Placement(Vector(1, 0, 0), Rotation()))
+                .part_containing(Placement(Vector(7, 0, 0), Rotation()))
+                .transform_link_to(Placement(Vector(1, 0, 0), Rotation()))
                 .shape('Part::Box', 'Box', Placement(Vector(10, 0, 0), Rotation()))
                 .assemble())
 
@@ -171,7 +188,7 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(resolved_shape.TypeId, 'Part::Box')
         self.assertEqual(resolved_shape.Name, 'Box')
         self.assertPlacementEqual(placement, Placement(
-            Vector(8, 0, 0), Rotation()))
+            Vector(18, 0, 0), Rotation()))
 
     def assertPlacementEqual(self, a, b):
         self.assertAlmostEqual(a.Base.x, b.Base.x, places=3)
