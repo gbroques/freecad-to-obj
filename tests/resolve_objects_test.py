@@ -257,7 +257,7 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertPlacementEqual(cone_placement, Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 1, 0), 90)))
 
-    def test_resolve_objects_with_keep_unresolved(self):
+    def test_resolve_objects_with_keep_unresolved_part_containing_shapes(self):
         document = App.newDocument()
         cylinder = document.addObject('Part::Cylinder', 'Cylinder')
         cylinder.Height = 10
@@ -285,6 +285,30 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(resolved_cylinder.Name, 'Part')
         self.assertPlacementEqual(cylinder_placement, Placement(
             Vector(), Rotation(Vector(0, 1, 0), 90)))
+
+    def test_resolve_objects_with_keep_unresolved_link_to_shape(self):
+        document = App.newDocument()
+        shape = document.addObject('Part::Cylinder', 'Cylinder')
+        shape.Placement = Placement(
+            Vector(5, 0, 0), Rotation())
+
+        link = document.addObject('App::Link', 'CylinderLink')
+        link.setLink(shape)
+        link.Placement = Placement(
+            Vector(10, 0, 0), Rotation())
+
+        def keep_unresolved(obj):
+            return obj.Name == 'CylinderLink'
+
+        resolved_objects = resolve_objects([link], keep_unresolved)
+
+        self.assertEqual(len(resolved_objects), 1)
+
+        resolved_shape, placement = resolved_objects[0]
+        self.assertEqual(resolved_shape.TypeId, 'App::Link')
+        self.assertEqual(resolved_shape.Name, 'CylinderLink')
+        self.assertPlacementEqual(placement, Placement(
+            Vector(10, 0, 0), Rotation()))
 
     def assertPlacementEqual(self, a, b):
         self.assertAlmostEqual(a.Base.x, b.Base.x, places=3)
