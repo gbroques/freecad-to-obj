@@ -89,13 +89,13 @@ class ResolveObjectsTest(unittest.TestCase):
             Vector(15, 0, 0), Rotation()))
 
     def test_resolve_objects_with_link_to_part_containing_shape(self):
-        part = (Assembler()
+        link = (Assembler()
                 .link_to(Placement(Vector(10, 0, 0), Rotation()))
                 .part_containing(Placement(Vector(100, 0, 0), Rotation()))
                 .shape('Part::Box', 'Box', Placement(Vector(3, 0, 0), Rotation()))
                 .assemble())
 
-        resolved_objects = resolve_objects([part])
+        resolved_objects = resolve_objects([link])
 
         self.assertEqual(len(resolved_objects), 1)
 
