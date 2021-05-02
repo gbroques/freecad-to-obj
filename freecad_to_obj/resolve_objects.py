@@ -26,6 +26,8 @@ def resolve_objects(objects: List[object],
             objs = resolve_objects(*args)
             resolved.extend(objs)
         else:
+            if stay_unresolved and obj.TypeId == 'App::Link' and obj.LinkTransform:
+                placement = placement * obj.LinkedObject.Placement
             resolved.append((obj, placement))
     return resolved
 
