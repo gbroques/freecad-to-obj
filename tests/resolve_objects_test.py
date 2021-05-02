@@ -257,6 +257,35 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertPlacementEqual(cone_placement, Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 1, 0), 90)))
 
+    def test_resolve_objects_with_keep_unresolved(self):
+        document = App.newDocument()
+        cylinder = document.addObject('Part::Cylinder', 'Cylinder')
+        cylinder.Height = 10
+        cone = document.addObject('Part::Cone', 'Cone')
+        cone.Radius2 = 0
+        cone.Height = 4
+        cone.Placement = Placement(
+            Vector(0, 0, 10), Rotation())
+
+        part = document.addObject('App::Part', 'Part')
+        part.addObject(cylinder)
+        part.addObject(cone)
+        part.Placement = Placement(
+            Vector(), Rotation(Vector(0, 1, 0), 90))
+
+        def keep_unresolved(obj):
+            return obj.Name == 'Part'
+
+        resolved_objects = resolve_objects([part], keep_unresolved)
+
+        self.assertEqual(len(resolved_objects), 1)
+
+        resolved_cylinder, cylinder_placement = resolved_objects[0]
+        self.assertEqual(resolved_cylinder.TypeId, 'App::Part')
+        self.assertEqual(resolved_cylinder.Name, 'Part')
+        self.assertPlacementEqual(cylinder_placement, Placement(
+            Vector(), Rotation(Vector(0, 1, 0), 90)))
+
     def assertPlacementEqual(self, a, b):
         self.assertAlmostEqual(a.Base.x, b.Base.x, places=3)
         self.assertAlmostEqual(a.Base.y, b.Base.y, places=3)

@@ -411,6 +411,31 @@ class ExportTest(unittest.TestCase):
         part_document_path.unlink()
         part_link_document_path.unlink()
 
+    def test_export_with_keep_unresolved_part(self):
+        document = App.newDocument()
+        box = document.addObject('Part::Box', 'Box')
+        box.Label = 'Cube'
+        box.Placement = Placement(
+            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
+
+        part = document.addObject('App::Part', 'Part')
+        part.Label = 'Part'
+        part.addObject(box)
+        part.Placement = Placement(
+            Vector(5, 0, 0), Rotation(Vector(0, 0, 1), 0))
+        document.recompute()
+
+        obj_filename = 'translated_part_containing_cube.obj'
+        with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
+            expected = f.read()
+
+        def keep_unresolved(obj: object) -> bool:
+            return obj.Name == 'Part'
+
+        obj_file_contents = freecad_to_obj.export([part], keep_unresolved=keep_unresolved)
+
+        self.assertEqual(obj_file_contents, expected)
+
 
 if __name__ == '__main__':
     unittest.main()

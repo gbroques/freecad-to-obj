@@ -1,9 +1,14 @@
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 from FreeCAD import Placement
 
+__all__ = ['resolve_objects']
+
+ASSEMBLY_TYPE_IDS = {'App::Part', 'App::Link'}
+
 
 def resolve_objects(objects: List[object],
+                    keep_unresolved: Callable[[object], bool] = None,
                     parent_placement: Placement = None,
                     chain: bool = True) -> List[Tuple[object, Placement]]:
     resolved = []
@@ -14,14 +19,29 @@ def resolve_objects(objects: List[object],
                 placement = parent_placement * placement
             else:
                 placement = parent_placement
-
-        if obj.TypeId == 'App::Part':
-            objs = resolve_objects(obj.Group, placement, True)
-            resolved.extend(objs)
-        elif obj.TypeId == 'App::Link':
-            objs = resolve_objects(
-                [obj.LinkedObject], placement, obj.LinkTransform)
+        stay_unresolved = keep_unresolved and keep_unresolved(obj)
+        if obj.TypeId in ASSEMBLY_TYPE_IDS and not stay_unresolved:
+            args = _get_resolve_objects_args(
+                obj, keep_unresolved, placement)
+            objs = resolve_objects(*args)
             resolved.extend(objs)
         else:
             resolved.append((obj, placement))
     return resolved
+
+
+def _get_resolve_objects_args(obj, keep_unresolved, placement):
+    if obj.TypeId == 'App::Part':
+        return [
+            obj.Group,
+            keep_unresolved,
+            placement,
+            True
+        ]
+    elif obj.TypeId == 'App::Link':
+        return [
+            [obj.LinkedObject],
+            keep_unresolved,
+            placement,
+            obj.LinkTransform
+        ]

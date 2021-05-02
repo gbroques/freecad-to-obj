@@ -21,7 +21,7 @@ Modifications:
     * See: https://wiki.freecadweb.org/Mesh_Feature
 """
 
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
 import Draft
 import FreeCAD as App
@@ -32,7 +32,9 @@ from .resolve_objects import resolve_objects
 __all__ = ['export']
 
 
-def export(export_list) -> str:
+def export(export_list: List[object],
+           object_name_getter: Callable[[object], str] = lambda obj: obj.Label,
+           keep_unresolved: Callable[[object], bool] = None) -> str:
     """
     Transforms a list of objects into a Wavefront .obj file contents.
     """
@@ -41,24 +43,26 @@ def export(export_list) -> str:
     offsetv = 1
     offsetvn = 1
 
-    object_placement_tuples = resolve_objects(export_list)
+    object_placement_tuples = resolve_objects(export_list, keep_unresolved)
     for obj, placement in object_placement_tuples:
-        if obj.isDerivedFrom('Part::Feature'):
-            shape = obj.Shape.copy(False)
-            shape.Placement = placement
+        shape = obj.Shape.copy(False)
+        shape.Placement = placement
 
-            vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn)
+        vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn)
 
-            offsetv += len(vlist)
-            offsetvn += len(vnlist)
-            lines.append('o ' + obj.Label)
+        offsetv += len(vlist)
+        offsetvn += len(vnlist)
+        object_name = object_name_getter(obj)
+        if type(object_name) != str:
+            raise ValueError('object_name_getter must return string.')
+        lines.append('o ' + object_name)
 
-            for v in vlist:
-                lines.append('v ' + v)
-            for vn in vnlist:
-                lines.append('vn ' + vn)
-            for f in flist:
-                lines.append('f ' + f)
+        for v in vlist:
+            lines.append('v ' + v)
+        for vn in vnlist:
+            lines.append('vn ' + vn)
+        for f in flist:
+            lines.append('f ' + f)
     return '\n'.join(lines) + '\n'
 
 
