@@ -27,6 +27,8 @@ import Draft
 import FreeCAD as App
 import MeshPart
 
+from .resolve_objects import resolve_objects
+
 __all__ = ['export']
 
 
@@ -39,7 +41,7 @@ def export(export_list) -> str:
     offsetv = 1
     offsetvn = 1
 
-    object_placement_tuples = _ungroup_objects(export_list)
+    object_placement_tuples = resolve_objects(export_list)
     for obj, placement in object_placement_tuples:
         if obj.isDerivedFrom('Part::Feature'):
             shape = obj.Shape.copy(False)
@@ -97,25 +99,3 @@ def _get_indices(shape, offsetv: int, offsetvn: int) -> Tuple[List[str], List[st
                      str(i + offsetvn))
 
     return vlist, vnlist, flist
-
-
-def _ungroup_objects(objects, parent_placement=None, chain=True) -> list:
-    ungrouped = []
-    for obj in objects:
-        placement = obj.Placement
-        if parent_placement:
-            if chain:
-                placement = placement * parent_placement
-            else:
-                placement = parent_placement
-
-        if obj.TypeId == 'App::Part':
-            objs = _ungroup_objects(obj.Group, placement, True)
-            ungrouped.extend(objs)
-        elif obj.TypeId == 'App::Link':
-            objs = _ungroup_objects(
-                [obj.LinkedObject], placement, obj.LinkTransform)
-            ungrouped.extend(objs)
-        else:
-            ungrouped.append((obj, placement))
-    return ungrouped
