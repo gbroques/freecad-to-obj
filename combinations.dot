@@ -1,0 +1,38 @@
+strict digraph Combinations {
+    rankdir="LR"
+    node [shape=plaintext]
+    1 [label="Shape"]
+    
+    2 [label="Part"]
+    3 [label="Link"]
+    4 [label="Transformed Link"]
+
+    5 [label="Part"]
+    6 [label="Link"]
+    7 [label="Transformed Link"]
+
+    8 [label="Part"]
+    9 [label="Link"]
+    10 [label="Transformed Link"]
+
+    11 [label="Part"]
+    12 [label="Link"]
+    13 [label="Transformed Link"]
+
+    2 -> 1 [label="contains"]
+    3 -> 1 [label="to"]
+    4 -> 1 [label="to"]
+
+    5 -> 2 [label="contains"]
+    6 -> 2 [label="to"]
+    7 -> 2 [label="to"]
+
+    8 -> 3 [label="contains"]
+    9 -> 3 [label="to"]
+    10 -> 3 [label="to"]
+
+    11 -> 4 [label="contains"]
+    12 -> 4 [label="to"]
+    13 -> 4 [label="to"]
+
+}
