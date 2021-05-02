@@ -1,5 +1,6 @@
-import FreeCAD as App
 from itertools import tee
+
+import FreeCAD as App
 
 __all__ = ['Assembler']
 
