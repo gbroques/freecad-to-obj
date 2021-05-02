@@ -510,6 +510,20 @@ class ExportTest(unittest.TestCase):
 
         self.assertEqual(obj_file_contents, expected)
 
+    def test_export_with_object_name_getter_not_returning_string_raises_value_error(self):
+        document = App.newDocument()
+        box = document.addObject('Part::Box', 'Box')
+        document.recompute()
+
+        def object_name_getter(obj: object) -> str:
+            return obj.Placement
+        with self.assertRaises(ValueError) as cm:
+            obj_file_contents = freecad_to_obj.export(
+                [box], object_name_getter=object_name_getter)
+
+        self.assertEqual(str(cm.exception),
+                         'object_name_getter must return string.')
+
 
 if __name__ == '__main__':
     unittest.main()
