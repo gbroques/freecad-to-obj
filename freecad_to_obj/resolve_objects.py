@@ -9,8 +9,9 @@ ASSEMBLY_TYPE_IDS = {'App::Part', 'App::Link'}
 
 def resolve_objects(objects: List[object],
                     keep_unresolved: Callable[[object], bool] = None,
-                    parent_placement: Placement = None,
-                    chain: bool = True) -> List[Tuple[object, Placement]]:
+                    path: list = [],
+                    parent_placement = None,
+                    chain: bool = True) -> dict:
     resolved = []
     for obj in objects:
         placement = obj.Placement
@@ -22,21 +23,27 @@ def resolve_objects(objects: List[object],
         stay_unresolved = keep_unresolved and keep_unresolved(obj)
         if obj.TypeId in ASSEMBLY_TYPE_IDS and not stay_unresolved:
             args = _get_resolve_objects_args(
-                obj, keep_unresolved, placement)
-            objs = resolve_objects(*args)
-            resolved.extend(objs)
+                obj, keep_unresolved, path, placement)
+            dictionaries = resolve_objects(*args)
+            resolved.extend(dictionaries)
         else:
             if stay_unresolved and obj.TypeId == 'App::Link' and obj.LinkTransform:
                 placement = placement * obj.LinkedObject.Placement
-            resolved.append((obj, placement))
+            resolved.append({
+                'object': obj,
+                'placement': placement,
+                'path': path
+            })
     return resolved
 
 
-def _get_resolve_objects_args(obj, keep_unresolved, placement):
+def _get_resolve_objects_args(obj, keep_unresolved, path, placement):
+    path_with_obj = path + [obj]
     if obj.TypeId == 'App::Part':
         return [
             obj.Group,
             keep_unresolved,
+            path_with_obj,
             placement,
             True
         ]
@@ -44,6 +51,7 @@ def _get_resolve_objects_args(obj, keep_unresolved, placement):
         return [
             [obj.LinkedObject],
             keep_unresolved,
+            path_with_obj,
             placement,
             obj.LinkTransform
         ]

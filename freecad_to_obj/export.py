@@ -43,8 +43,10 @@ def export(export_list: List[object],
     offsetv = 1
     offsetvn = 1
 
-    object_placement_tuples = resolve_objects(export_list, keep_unresolved)
-    for obj, placement in object_placement_tuples:
+    resolved_objects = resolve_objects(export_list, keep_unresolved)
+    for resolved_object in resolved_objects:
+        obj = resolved_object['object']
+        placement = resolved_object['placement']
         shape = obj.Shape.copy(False)
         shape.Placement = placement
 
