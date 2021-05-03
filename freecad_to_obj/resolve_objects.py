@@ -8,7 +8,7 @@ ASSEMBLY_TYPE_IDS = {'App::Part', 'App::Link'}
 
 
 def resolve_objects(objects: List[object],
-                    keep_unresolved: Callable[[object], bool] = None,
+                    keep_unresolved: Callable[[object, List[object]], bool] = None,
                     path: list = [],
                     parent_placement = None,
                     chain: bool = True) -> dict:
@@ -20,7 +20,7 @@ def resolve_objects(objects: List[object],
                 placement = parent_placement * placement
             else:
                 placement = parent_placement
-        stay_unresolved = keep_unresolved and keep_unresolved(obj)
+        stay_unresolved = keep_unresolved and keep_unresolved(obj, path)
         if obj.TypeId in ASSEMBLY_TYPE_IDS and not stay_unresolved:
             args = _get_resolve_objects_args(
                 obj, keep_unresolved, path, placement)

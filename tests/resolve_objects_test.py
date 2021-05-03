@@ -1,4 +1,5 @@
 import unittest
+from typing import List
 
 import FreeCAD as App
 from FreeCAD import Placement, Rotation, Vector
@@ -376,7 +377,7 @@ class ResolveObjectsTest(unittest.TestCase):
         part.Placement = Placement(
             Vector(), Rotation(Vector(0, 1, 0), 90))
 
-        def keep_unresolved(obj):
+        def keep_unresolved(obj: object, path: List[object]) -> bool:
             return obj.Name == 'Part'
 
         resolved_objects = resolve_objects([part], keep_unresolved)
@@ -405,7 +406,7 @@ class ResolveObjectsTest(unittest.TestCase):
         link.Placement = Placement(
             Vector(10, 0, 0), Rotation())
 
-        def keep_unresolved(obj):
+        def keep_unresolved(obj: object, path: List[object]) -> bool:
             return obj.Name == 'CylinderLink'
 
         resolved_objects = resolve_objects([link], keep_unresolved)
@@ -435,7 +436,7 @@ class ResolveObjectsTest(unittest.TestCase):
             Vector(10, 0, 0), Rotation())
         link.LinkTransform = True
 
-        def keep_unresolved(obj):
+        def keep_unresolved(obj: object, path: List[object]) -> bool:
             return obj.Name == 'CylinderLink'
 
         resolved_objects = resolve_objects([link], keep_unresolved)

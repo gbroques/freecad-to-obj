@@ -33,8 +33,8 @@ __all__ = ['export']
 
 
 def export(export_list: List[object],
-           object_name_getter: Callable[[object], str] = lambda obj: obj.Label,
-           keep_unresolved: Callable[[object], bool] = None) -> str:
+           object_name_getter: Callable[[object, List[object]], str] = lambda obj, path: obj.Label,
+           keep_unresolved: Callable[[object, List[object]], bool] = None) -> str:
     """
     Transforms a list of objects into a Wavefront .obj file contents.
     """
@@ -47,6 +47,7 @@ def export(export_list: List[object],
     for resolved_object in resolved_objects:
         obj = resolved_object['object']
         placement = resolved_object['placement']
+        path = resolved_object['path']
         shape = obj.Shape.copy(False)
         shape.Placement = placement
 
@@ -54,7 +55,7 @@ def export(export_list: List[object],
 
         offsetv += len(vlist)
         offsetvn += len(vnlist)
-        object_name = object_name_getter(obj)
+        object_name = object_name_getter(obj, path)
         if type(object_name) != str:
             raise ValueError('object_name_getter must return string.')
         lines.append('o ' + object_name)

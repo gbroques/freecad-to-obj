@@ -1,6 +1,7 @@
 import os
 import unittest
 from pathlib import Path
+from typing import List
 
 import FreeCAD as App
 import freecad_to_obj
@@ -429,7 +430,7 @@ class ExportTest(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
             expected = f.read()
 
-        def keep_unresolved(obj: object) -> bool:
+        def keep_unresolved(obj: object, path: List[object]) -> bool:
             return obj.Name == 'Part'
 
         obj_file_contents = freecad_to_obj.export(
@@ -455,7 +456,7 @@ class ExportTest(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
             expected = f.read()
 
-        def keep_unresolved(obj: object) -> bool:
+        def keep_unresolved(obj: object, path: List[object]) -> bool:
             return obj.Label == 'CubeLink'
 
         obj_file_contents = freecad_to_obj.export(
@@ -482,7 +483,7 @@ class ExportTest(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
             expected = f.read()
 
-        def keep_unresolved(obj: object) -> bool:
+        def keep_unresolved(obj: object, path: List[object]) -> bool:
             return obj.Label == 'CubeLink'
 
         obj_file_contents = freecad_to_obj.export(
@@ -502,7 +503,7 @@ class ExportTest(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
             expected = f.read()
 
-        def object_name_getter(obj: object) -> str:
+        def object_name_getter(obj: object, path: List[object]) -> str:
             return obj.Name
 
         obj_file_contents = freecad_to_obj.export(
@@ -515,7 +516,7 @@ class ExportTest(unittest.TestCase):
         box = document.addObject('Part::Box', 'Box')
         document.recompute()
 
-        def object_name_getter(obj: object) -> str:
+        def object_name_getter(obj: object, path: List[object]) -> str:
             return obj.Placement
         with self.assertRaises(ValueError) as cm:
             obj_file_contents = freecad_to_obj.export(
