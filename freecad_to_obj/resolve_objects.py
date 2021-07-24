@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple
+from typing import Callable, List
 
 from FreeCAD import Placement
 
@@ -8,9 +8,10 @@ ASSEMBLY_TYPE_IDS = {'App::Part', 'App::Link'}
 
 
 def resolve_objects(objects: List[object],
-                    keep_unresolved: Callable[[object, List[object]], bool] = None,
+                    keep_unresolved: Callable[[
+                        object, List[object]], bool] = None,
                     path: list = [],
-                    parent_placement = None,
+                    parent_placement: Placement = None,
                     chain: bool = True) -> dict:
     resolved = []
     for obj in objects:

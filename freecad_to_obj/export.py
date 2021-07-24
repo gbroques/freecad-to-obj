@@ -24,7 +24,6 @@ Modifications:
 from typing import Callable, List, Tuple
 
 import Draft
-import FreeCAD as App
 import MeshPart
 
 from .resolve_objects import resolve_objects
@@ -33,7 +32,8 @@ __all__ = ['export']
 
 
 def export(export_list: List[object],
-           object_name_getter: Callable[[object, List[object]], str] = lambda obj, path: obj.Label,
+           object_name_getter: Callable[[
+               object, List[object]], str] = lambda obj, path: obj.Label,
            keep_unresolved: Callable[[object, List[object]], bool] = None) -> str:
     """
     Transforms a list of objects into a Wavefront .obj file contents.
