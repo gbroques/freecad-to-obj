@@ -9,6 +9,7 @@ This package satisfies some unique requirements for exporting to OBJ that FreeCA
 * Ungroup the following standard container objects:
   * [Group](https://wiki.freecadweb.org/Std_Group)
   * [Part](https://wiki.freecadweb.org/Std_Part)
+* Control export granularity keeping container objects grouped, and links unresolved.
 
 ## Usage
 
