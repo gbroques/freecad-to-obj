@@ -25,6 +25,7 @@ from typing import Callable, List, Tuple
 
 import Draft
 import MeshPart
+import Part
 
 from .resolve_objects import resolve_objects
 
@@ -40,6 +41,7 @@ def export(export_list: List[object],
     """
     lines = []
 
+    # Vertex numbers start from 1 instead of 0
     offsetv = 1
     offsetvn = 1
 
@@ -66,6 +68,19 @@ def export(export_list: List[object],
             lines.append('vn ' + vn)
         for f in flist:
             lines.append('f ' + f)
+
+        wires = get_wires(shape)
+
+        for i, wire in enumerate(wires):
+            lines.append(f'o {object_name}Wire{i}')
+            line_segments = []
+            for vertex in wire:
+                x, y, z = vertex
+                lines.append(f'v {x} {y} {z}')
+                line_segments.append(str(offsetv))
+                offsetv += 1
+            lines.append('l ' + ' '.join(line_segments))
+
     return '\n'.join(lines) + '\n'
 
 
@@ -106,3 +121,24 @@ def _get_indices(shape, offsetv: int, offsetvn: int) -> Tuple[List[str], List[st
                      str(i + offsetvn))
 
     return vlist, vnlist, flist
+
+
+def get_wires(shape) -> List[List[Tuple[str, str, str]]]:
+    wires = []
+    for face in shape.Faces:
+        for wire in face.Wires:
+            discretized_wire = discretize_wire(wire)
+            wire = []
+            for vertex in discretized_wire:
+                # use strings to avoid 0.00001 written as 1e-05
+                x = '{:.5f}'.format(vertex.x)
+                y = '{:.5f}'.format(vertex.y)
+                z = '{:.5f}'.format(vertex.z)
+                wire.append((x, y, z))
+            wires.append(wire)
+    return wires
+
+
+def discretize_wire(wire: Part.Wire) -> Part.Wire:
+    wire_with_sorted_edges = Part.Wire(Part.__sortEdges__(wire.Edges))
+    return wire_with_sorted_edges.discretize(QuasiDeflection=0.005)
