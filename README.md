@@ -10,7 +10,7 @@ This package satisfies some unique requirements for exporting to OBJ that FreeCA
   * [Group](https://wiki.freecadweb.org/Std_Group)
   * [Part](https://wiki.freecadweb.org/Std_Part)
 * Control export granularity keeping container objects grouped, and links unresolved.
-* Exports wires (the black outline or line segments surrounding parts)
+* Export wires (the black outline or line segments surrounding parts)
 
 ## Usage
 
