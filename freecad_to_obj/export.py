@@ -131,6 +131,9 @@ def get_wires(shape) -> List[List[Tuple[str, str, str]]]:
             wire = []
             for vertex in discretized_wire:
                 # use strings to avoid 0.00001 written as 1e-05
+                # TODO: This uses 5 decimal places of precision,
+                #       where we use p = Draft.precision() above.
+                #       We should make the precision consistent.
                 x = '{:.5f}'.format(vertex.x)
                 y = '{:.5f}'.format(vertex.y)
                 z = '{:.5f}'.format(vertex.z)
