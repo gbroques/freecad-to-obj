@@ -22,7 +22,7 @@ obj_file_contents = freecad_to_obj.export(objects)
 ## Export Format
 Object names in Wavefront .obj are preceded by an "o [ObjectName]" ([source](https://en.wikipedia.org/wiki/Wavefront_.obj_file#Reference_materials)).
 
-This library uses the object's `Label` for the object name by default, but you can change this behavior via the `object_name_getter` keyword argument.
+This library uses the object's `Label` for the object name by default, but you can change this behavior via the `object_name_getter` keyword argument (see [API](#api)).
 
     o [ObjectName]
     v [x1] [y1] [y2]
