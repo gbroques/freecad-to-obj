@@ -82,9 +82,7 @@ Exports a list of FreeCAD objects to Wavefront (.obj).
 |`object_name_getter`|`Callable[[object, List[object]], str]`|`lambda obj, path: obj.Label`|Defaults to the `Label`.|Function to return the name of the object used in export.|
 |` keep_unresolved`|`Callable[[object, List[object]], bool]`|`None`|Function to return whether to keep an object "unresolved" or a group such as `App::Link` or `App::Part`.|
 
-**Returns:** `string`
-
-Returns Wavefront .obj file contents.
+**Returns:** (`string`) Wavefront .obj file contents.
 
 ## Contributing
 See [Contributing Guidelines](./CONTRIBUTING.md).
