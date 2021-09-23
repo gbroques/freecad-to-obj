@@ -455,6 +455,16 @@ class ResolveObjectsTest(unittest.TestCase):
             Vector(15, 0, 0), Rotation()))
         self.assertEqual(len(path), 0)
 
+    def test_resolve_objects_with_ignore_object(self):
+        shape = (Assembler()
+                 .shape('Part::Box', 'Box', Placement(Vector(10, 0, 0), Rotation()))
+                 .assemble())
+
+        resolved_objects = resolve_objects(
+            [shape], ignore_object=lambda obj, path: True)
+
+        self.assertEqual(len(resolved_objects), 0)
+
     def assertPlacementEqual(self, a, b):
         self.assertAlmostEqual(a.Base.x, b.Base.x, places=3)
         self.assertAlmostEqual(a.Base.y, b.Base.y, places=3)

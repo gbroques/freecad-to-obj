@@ -35,7 +35,8 @@ __all__ = ['export']
 def export(export_list: List[object],
            object_name_getter: Callable[[
                object, List[object]], str] = lambda obj, path: obj.Label,
-           keep_unresolved: Callable[[object, List[object]], bool] = None) -> str:
+           keep_unresolved: Callable[[object, List[object]], bool] = None,
+           do_not_export: Callable[[object, List[object]], bool] = lambda obj, path: not obj.Visibility) -> str:
     """
     Transforms a list of objects into a Wavefront .obj file contents.
     """
@@ -45,7 +46,8 @@ def export(export_list: List[object],
     offsetv = 1
     offsetvn = 1
 
-    resolved_objects = resolve_objects(export_list, keep_unresolved)
+    resolved_objects = resolve_objects(
+        export_list, keep_unresolved, do_not_export)
     for resolved_object in resolved_objects:
         obj = resolved_object['object']
         placement = resolved_object['placement']
@@ -80,7 +82,8 @@ def export(export_list: List[object],
                 line_segments.append(str(offsetv))
                 offsetv += 1
             lines.append('l ' + ' '.join(line_segments))
-
+    if len(lines) == 0:
+        return ''
     return '\n'.join(lines) + '\n'
 
 

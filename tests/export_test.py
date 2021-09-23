@@ -525,6 +525,31 @@ class ExportTest(unittest.TestCase):
         self.assertEqual(str(cm.exception),
                          'object_name_getter must return string.')
 
+    def test_export_with_do_not_export(self):
+        document = App.newDocument()
+        box = document.addObject('Part::Box', 'Cube')
+        box.Label = 'Cube'
+        document.recompute()
+
+        def do_not_export(obj: object, path: List[object]) -> str:
+            return True
+
+        obj_file_contents = freecad_to_obj.export(
+            [box], do_not_export=do_not_export)
+
+        self.assertEqual(obj_file_contents, '')
+
+    def test_export_with_invisible_object(self):
+        document = App.newDocument()
+        box = document.addObject('Part::Box', 'Cube')
+        box.Label = 'Cube'
+        box.Visibility = False
+        document.recompute()
+
+        obj_file_contents = freecad_to_obj.export([box])
+
+        self.assertEqual(obj_file_contents, '')
+
 
 if __name__ == '__main__':
     unittest.main()
