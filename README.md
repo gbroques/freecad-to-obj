@@ -1,4 +1,4 @@
-# FreeCAD: Export to OBJ
+# freecad-to-obj
 Python package to export FreeCAD objects to the [Wavefront (.obj)](https://en.wikipedia.org/wiki/Wavefront_.obj_file) file format.
 
 ## Why this package?
@@ -88,6 +88,9 @@ Exports a list of FreeCAD objects to Wavefront (.obj).
 
 ## Contributing
 See [Contributing Guidelines](./CONTRIBUTING.md).
+
+## Changelog
+See [Changelog](./CHANGELOG.md).
 
 ## Limitations
 For simplicity, this package does not care about thes generation of material (`.mtl`) files.
