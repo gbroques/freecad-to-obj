@@ -74,6 +74,7 @@ def export(export_list: List[object],
         wires = get_wires(shape)
 
         for i, wire in enumerate(wires):
+            # TODO: Consider passing in wire_label_delimiter argument.
             lines.append(f'o {object_name}Wire{i}')
             line_segments = []
             for vertex in wire:
