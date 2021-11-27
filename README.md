@@ -1,4 +1,7 @@
 # freecad-to-obj
+
+[![PyPI version](https://badge.fury.io/py/freecad-to-obj.svg)](https://badge.fury.io/py/freecad-to-obj)
+
 Python package to export FreeCAD objects to the [Wavefront (.obj)](https://en.wikipedia.org/wiki/Wavefront_.obj_file) file format.
 
 ## Why this package?
