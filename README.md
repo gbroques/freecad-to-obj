@@ -14,7 +14,8 @@ This package satisfies some unique requirements for exporting to OBJ that FreeCA
   * [Part](https://wiki.freecadweb.org/Std_Part)
 * Control export granularity keeping container objects grouped, and links unresolved.
 * Control which objects are exported (e.g. don't export invisible objects).
-* Export wires (the black outline or line segments surrounding parts)
+* Export wires (the black outline or line segments surrounding parts).
+* Export link array elements.
 
 ## Usage
 
@@ -83,9 +84,10 @@ Exports a list of FreeCAD objects to Wavefront (.obj).
 
 |Name|Type|Default|Description|
 |----|----|--------|-----------|
-|`object_name_getter`|`Callable[[object, List[object]], str]`|`lambda obj, path: obj.Label`|Defaults to the `Label`.|Function to return the name of the object used in export.|
+|`object_name_getter`|`Callable[[object, List[object], int], str]`|`lambda obj, path, shape_index: obj.Label`|Defaults to the `Label`.|Function to return the name of the object used in export.|
 |` keep_unresolved`|`Callable[[object, List[object]], bool]`|`None`|Function to return whether to keep an object "unresolved" or a group such as `App::Link` or `App::Part`.|
 |`do_not_export`|`Callable[[object, List[object]], bool]`|`lambda obj, path: not obj.Visibility`|Function to return whether to export an object or not. By default, all invisible objects are *not* exported.|
+|`export_link_array_elements`|`boolean`|`False`|Boolean to control whether to export link array elements. By default, link arrays are exported as a single element.|
 
 **Returns:** (`string`) Wavefront .obj file contents.
 

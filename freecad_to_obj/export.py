@@ -26,6 +26,7 @@ from typing import Callable, List, Tuple
 import Draft
 import MeshPart
 import Part
+from FreeCAD import Placement
 
 from .resolve_objects import resolve_objects
 
@@ -34,9 +35,11 @@ __all__ = ['export']
 
 def export(export_list: List[object],
            object_name_getter: Callable[[
-               object, List[object]], str] = lambda obj, path: obj.Label,
+               object, List[object], int], str] = lambda obj, path, shape_index: obj.Label,
            keep_unresolved: Callable[[object, List[object]], bool] = None,
-           do_not_export: Callable[[object, List[object]], bool] = lambda obj, path: not obj.Visibility) -> str:
+           do_not_export: Callable[[
+               object, List[object]], bool] = lambda obj, path: not obj.Visibility,
+           export_link_array_elements: bool = False) -> str:
     """
     Transforms a list of objects into a Wavefront .obj file contents.
     """
@@ -52,37 +55,36 @@ def export(export_list: List[object],
         obj = resolved_object['object']
         placement = resolved_object['placement']
         path = resolved_object['path']
-        shape = obj.Shape.copy(False)
-        shape.Placement = placement
+        shapes = get_shapes(obj, placement, export_link_array_elements)
+        for shape_index, shape in enumerate(shapes):
+            vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn)
 
-        vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn)
+            offsetv += len(vlist)
+            offsetvn += len(vnlist)
+            object_name = object_name_getter(obj, path, shape_index)
+            if type(object_name) != str:
+                raise ValueError('object_name_getter must return string.')
+            lines.append('o ' + object_name)
 
-        offsetv += len(vlist)
-        offsetvn += len(vnlist)
-        object_name = object_name_getter(obj, path)
-        if type(object_name) != str:
-            raise ValueError('object_name_getter must return string.')
-        lines.append('o ' + object_name)
+            for v in vlist:
+                lines.append('v ' + v)
+            for vn in vnlist:
+                lines.append('vn ' + vn)
+            for f in flist:
+                lines.append('f ' + f)
 
-        for v in vlist:
-            lines.append('v ' + v)
-        for vn in vnlist:
-            lines.append('vn ' + vn)
-        for f in flist:
-            lines.append('f ' + f)
+            wires = get_wires(shape)
 
-        wires = get_wires(shape)
-
-        for i, wire in enumerate(wires):
-            # TODO: Consider passing in wire_label_delimiter argument.
-            lines.append(f'o {object_name}Wire{i}')
-            line_segments = []
-            for vertex in wire:
-                x, y, z = vertex
-                lines.append(f'v {x} {y} {z}')
-                line_segments.append(str(offsetv))
-                offsetv += 1
-            lines.append('l ' + ' '.join(line_segments))
+            for i, wire in enumerate(wires):
+                # TODO: Consider passing in wire_label_delimiter argument.
+                lines.append(f'o {object_name}Wire{i}')
+                line_segments = []
+                for vertex in wire:
+                    x, y, z = vertex
+                    lines.append(f'v {x} {y} {z}')
+                    line_segments.append(str(offsetv))
+                    offsetv += 1
+                lines.append('l ' + ' '.join(line_segments))
     if len(lines) == 0:
         return ''
     return '\n'.join(lines) + '\n'
@@ -149,3 +151,19 @@ def get_wires(shape) -> List[List[Tuple[str, str, str]]]:
 def discretize_wire(wire: Part.Wire) -> Part.Wire:
     wire_with_sorted_edges = Part.Wire(Part.__sortEdges__(wire.Edges))
     return wire_with_sorted_edges.discretize(QuasiDeflection=0.005)
+
+
+def get_shapes(obj: object, placement: Placement, export_link_array_elements: bool):
+    if is_link_array(obj) and export_link_array_elements:
+        return [shape.copy(False) for shape in obj.Shape.SubShapes]
+    else:
+        shape = obj.Shape.copy(False)
+        shape.Placement = placement
+        return [shape]
+
+
+def is_link_array(obj: object) -> bool:
+    return (
+        obj.TypeId == 'Part::FeaturePython' and
+        hasattr(obj, 'ArrayType')
+    )
