@@ -88,6 +88,7 @@ Exports a list of FreeCAD objects to Wavefront (.obj).
 |` keep_unresolved`|`Callable[[object, List[object]], bool]`|`None`|Function to return whether to keep an object "unresolved" or a group such as `App::Link` or `App::Part`.|
 |`do_not_export`|`Callable[[object, List[object]], bool]`|`lambda obj, path: not obj.Visibility`|Function to return whether to export an object or not. By default, all invisible objects are *not* exported.|
 |`export_link_array_elements`|`boolean`|`False`|Boolean to control whether to export link array elements. By default, link arrays are exported as a single element.|
+|`mesh_settings`|`dict`|`{'LinearDeflection': 0.1, 'AngularDeflection': 0.7, 'Relative': True}`|Mesh settings, see [FreeCAD wiki](https://wiki.freecad.org/Mesh_FromPartShape).|
 
 **Returns:** (`string`) Wavefront .obj file contents.
 

@@ -32,6 +32,12 @@ from .resolve_objects import resolve_objects
 
 __all__ = ['export']
 
+# https://wiki.freecad.org/Mesh_FromPartShape
+default_mesh_settings = {
+    'LinearDeflection': 0.1,
+    'AngularDeflection': 0.7,
+    'Relative': True
+}
 
 def export(export_list: List[object],
            object_name_getter: Callable[[
@@ -39,7 +45,8 @@ def export(export_list: List[object],
            keep_unresolved: Callable[[object, List[object]], bool] = None,
            do_not_export: Callable[[
                object, List[object]], bool] = lambda obj, path: not obj.Visibility,
-           export_link_array_elements: bool = False) -> str:
+           export_link_array_elements: bool = False,
+           mesh_settings: dict = default_mesh_settings) -> str:
     """
     Transforms a list of objects into a Wavefront .obj file contents.
     """
@@ -57,7 +64,7 @@ def export(export_list: List[object],
         path = resolved_object['path']
         shapes = get_shapes(obj, placement, export_link_array_elements)
         for shape_index, shape in enumerate(shapes):
-            vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn)
+            vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn, mesh_settings)
 
             offsetv += len(vlist)
             offsetvn += len(vnlist)
@@ -90,7 +97,11 @@ def export(export_list: List[object],
     return '\n'.join(lines) + '\n'
 
 
-def _get_indices(shape, offsetv: int, offsetvn: int) -> Tuple[List[str], List[str], List[str]]:
+def _get_indices(
+        shape,
+        offsetv: int,
+        offsetvn: int,
+        mesh_settings: dict) -> Tuple[List[str], List[str], List[str]]:
     """
     Return a tuple containing 3 lists:
 
@@ -105,8 +116,7 @@ def _get_indices(shape, offsetv: int, offsetvn: int) -> Tuple[List[str], List[st
     flist = []
 
     # Triangulates shapes with curves
-    mesh = MeshPart.meshFromShape(
-        Shape=shape, LinearDeflection=0.1, AngularDeflection=0.7, Relative=True)
+    mesh = MeshPart.meshFromShape(Shape=shape, **mesh_settings)
     for v in mesh.Topology[0]:
         p = Draft.precision()
         vlist.append(str(round(v[0], p)) + ' ' +
