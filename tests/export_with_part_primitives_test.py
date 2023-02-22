@@ -1,6 +1,5 @@
 import os
 import unittest
-from pathlib import Path
 
 import FreeCAD as App
 import freecad_to_obj

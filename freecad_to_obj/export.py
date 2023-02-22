@@ -26,7 +26,8 @@ from typing import Callable, List, Tuple
 import Draft
 import MeshPart
 import Part
-from FreeCAD import Placement
+from concurrent.futures import ProcessPoolExecutor
+from itertools import repeat
 
 from .resolve_objects import resolve_objects
 
@@ -38,6 +39,7 @@ default_mesh_settings = {
     'AngularDeflection': 0.7,
     'Relative': True
 }
+
 
 def export(export_list: List[object],
            object_name_getter: Callable[[
@@ -56,52 +58,57 @@ def export(export_list: List[object],
     offsetv = 1
     offsetvn = 1
 
-    resolved_objects = resolve_objects(
-        export_list, keep_unresolved, do_not_export)
-    for resolved_object in resolved_objects:
-        obj = resolved_object['object']
-        placement = resolved_object['placement']
-        path = resolved_object['path']
-        shapes = get_shapes(obj, placement, export_link_array_elements)
-        for shape_index, shape in enumerate(shapes):
-            vlist, vnlist, flist = _get_indices(shape, offsetv, offsetvn, mesh_settings)
+    resolved_objects = resolve_objects(export_list,
+                                       keep_unresolved,
+                                       object_name_getter,
+                                       do_not_export,
+                                       export_link_array_elements)
+    shapes = map(lambda o: o['shape'], resolved_objects)
+    with ProcessPoolExecutor() as executor:
+        mesh_definitions = list(executor.map(_get_mesh_definition, shapes, repeat(mesh_settings)))
+    for index, resolved_object in enumerate(resolved_objects):
+        shape = resolved_object['shape']
+        mesh_definition = mesh_definitions[index]
+        print(mesh_definition)
+        vlist = mesh_definition['vertexes']
+        vnlist = mesh_definition['vertex_normals']
+        facets = mesh_definition['facets']
+        object_name = resolved_object['name']
+        lines.append('o ' + object_name)
 
-            offsetv += len(vlist)
-            offsetvn += len(vnlist)
-            object_name = object_name_getter(obj, path, shape_index)
-            if type(object_name) != str:
-                raise ValueError('object_name_getter must return string.')
-            lines.append('o ' + object_name)
+        for v in vlist:
+            lines.append(f'v {v[0]} {v[1]} {v[2]}')
+        for vn in vnlist:
+            lines.append(f'vn {vn[0]} {vn[1]} {vn[2]}')
+        for i, facet in enumerate(facets):
+            f = str(facet[0] + offsetv) + '//' + \
+                str(i + offsetvn) + ' ' + \
+                str(facet[1] + offsetv) + '//' + \
+                str(i + offsetvn) + ' ' + \
+                str(facet[2] + offsetv) + '//' + \
+                str(i + offsetvn)
+            lines.append('f ' + f)
 
-            for v in vlist:
-                lines.append('v ' + v)
-            for vn in vnlist:
-                lines.append('vn ' + vn)
-            for f in flist:
-                lines.append('f ' + f)
+        offsetv += len(vlist)
+        offsetvn += len(vnlist)
+        wires = get_wires(shape)
 
-            wires = get_wires(shape)
-
-            for i, wire in enumerate(wires):
-                # TODO: Consider passing in wire_label_delimiter argument.
-                lines.append(f'o {object_name}Wire{i}')
-                line_segments = []
-                for vertex in wire:
-                    x, y, z = vertex
-                    lines.append(f'v {x} {y} {z}')
-                    line_segments.append(str(offsetv))
-                    offsetv += 1
-                lines.append('l ' + ' '.join(line_segments))
+        for i, wire in enumerate(wires):
+            # TODO: Consider passing in wire_label_delimiter argument.
+            lines.append(f'o {object_name}Wire{i}')
+            line_segments = []
+            for vertex in wire:
+                x, y, z = vertex
+                lines.append(f'v {x} {y} {z}')
+                line_segments.append(str(offsetv))
+                offsetv += 1
+            lines.append('l ' + ' '.join(line_segments))
     if len(lines) == 0:
         return ''
     return '\n'.join(lines) + '\n'
 
 
-def _get_indices(
-        shape,
-        offsetv: int,
-        offsetvn: int,
-        mesh_settings: dict) -> Tuple[List[str], List[str], List[str]]:
+def _get_mesh_definition(shape, mesh_settings: dict = default_mesh_settings) -> dict:
     """
     Return a tuple containing 3 lists:
 
@@ -111,32 +118,22 @@ def _get_indices(
 
     offset with a given amount.
     """
-    vlist = []
-    vnlist = []
-    flist = []
-
+    mesh_definition = {
+        'vertexes': [],
+        'facets': [],
+        'vertex_normals': []
+    }
     # Triangulates shapes with curves
     mesh = MeshPart.meshFromShape(Shape=shape, **mesh_settings)
-    for v in mesh.Topology[0]:
+    vertexes, facets = mesh.Topology
+    for vertex in vertexes:
         p = Draft.precision()
-        vlist.append(str(round(v[0], p)) + ' ' +
-                     str(round(v[1], p)) + ' ' +
-                     str(round(v[2], p)))
-
-    for vn in mesh.Facets:
-        vnlist.append(str(vn.Normal[0]) + ' ' +
-                      str(vn.Normal[1]) + ' ' +
-                      str(vn.Normal[2]))
-
-    for i, vn in enumerate(mesh.Topology[1]):
-        flist.append(str(vn[0] + offsetv) + '//' +
-                     str(i + offsetvn) + ' ' +
-                     str(vn[1] + offsetv) + '//' +
-                     str(i + offsetvn) + ' ' +
-                     str(vn[2] + offsetv) + '//' +
-                     str(i + offsetvn))
-
-    return vlist, vnlist, flist
+        vertex = (round(vertex.x, p), round(vertex.y, p), round(vertex.z, p))
+        mesh_definition['vertexes'].append(vertex)
+    mesh_definition['facets'] = facets
+    mesh_definition['vertex_normals'] = list(
+        map(lambda f: tuple(f.Normal), mesh.Facets))
+    return mesh_definition
 
 
 def get_wires(shape) -> List[List[Tuple[str, str, str]]]:
@@ -161,19 +158,3 @@ def get_wires(shape) -> List[List[Tuple[str, str, str]]]:
 def discretize_wire(wire: Part.Wire) -> Part.Wire:
     wire_with_sorted_edges = Part.Wire(Part.__sortEdges__(wire.Edges))
     return wire_with_sorted_edges.discretize(QuasiDeflection=0.005)
-
-
-def get_shapes(obj: object, placement: Placement, export_link_array_elements: bool):
-    if is_link_array(obj) and export_link_array_elements:
-        return [shape.copy(False) for shape in obj.Shape.SubShapes]
-    else:
-        shape = obj.Shape.copy(False)
-        shape.Placement = placement
-        return [shape]
-
-
-def is_link_array(obj: object) -> bool:
-    return (
-        obj.TypeId == 'Part::FeaturePython' and
-        hasattr(obj, 'ArrayType')
-    )

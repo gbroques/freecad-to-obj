@@ -11,22 +11,21 @@ from tests.assembler import Assembler
 class ResolveObjectsTest(unittest.TestCase):
 
     def test_resolve_objects_with_shape(self):
-        shape = (Assembler()
-                 .shape('Part::Box', 'Box', Placement(Vector(10, 0, 0), Rotation()))
-                 .assemble())
+        obj = (Assembler()
+               .shape('Part::Box', 'Box', Placement(Vector(10, 0, 0), Rotation()))
+               .assemble())
 
-        resolved_objects = resolve_objects([shape])
+        resolved_objects = resolve_objects([obj])
 
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        obj = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(obj.Placement, Placement(
             Vector(10, 0, 0), Rotation()))
         self.assertEqual(len(path), 0)
 
@@ -41,13 +40,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(10, 0, 0), Rotation()))
         self.assertEqual(len(path), 1)
         self.assertEqual(path[0].TypeId, 'App::Part')
@@ -63,13 +61,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(10, 0, 0), Rotation()))
         self.assertEqual(len(path), 1)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -85,13 +82,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(15, 0, 0), Rotation()))
         self.assertEqual(len(path), 1)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -109,13 +105,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(15, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Part')
@@ -133,13 +128,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(13, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -157,13 +151,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(15, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -182,13 +175,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(8, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Part')
@@ -206,13 +198,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(7, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -230,13 +221,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(8, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -255,13 +245,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(18, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Part')
@@ -280,13 +269,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(17, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -305,13 +293,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'Part::Box')
-        self.assertEqual(resolved_shape.Name, 'Box')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Box')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(18, 0, 0), Rotation()))
         self.assertEqual(len(path), 2)
         self.assertEqual(path[0].TypeId, 'App::Link')
@@ -321,17 +308,17 @@ class ResolveObjectsTest(unittest.TestCase):
 
     def test_resolve_objects_with_rotated_part_containing_shapes(self):
         document = App.newDocument()
-        cylinder = document.addObject('Part::Cylinder', 'Cylinder')
-        cylinder.Height = 10
-        cone = document.addObject('Part::Cone', 'Cone')
-        cone.Radius2 = 0
-        cone.Height = 4
-        cone.Placement = Placement(
+        cylinder_shape = document.addObject('Part::Cylinder', 'Cylinder')
+        cylinder_shape.Height = 10
+        cone_shape = document.addObject('Part::Cone', 'Cone')
+        cone_shape.Radius2 = 0
+        cone_shape.Height = 4
+        cone_shape.Placement = Placement(
             Vector(0, 0, 10), Rotation())
 
         part = document.addObject('App::Part', 'Part')
-        part.addObject(cylinder)
-        part.addObject(cone)
+        part.addObject(cylinder_shape)
+        part.addObject(cone_shape)
         part.Placement = Placement(
             Vector(), Rotation(Vector(0, 1, 0), 90))
 
@@ -340,23 +327,21 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 2)
 
         resolved_cylinder = resolved_objects[0]
-        cylinder = resolved_cylinder['object']
-        cylinder_placement = resolved_cylinder['placement']
+        cylinder_shape = resolved_cylinder['shape']
+        cylinder_name = resolved_cylinder['name']
         cylinder_path = resolved_cylinder['path']
-        self.assertEqual(cylinder.TypeId, 'Part::Cylinder')
-        self.assertEqual(cylinder.Name, 'Cylinder')
-        self.assertPlacementEqual(cylinder_placement, Placement(
+        self.assertEqual(cylinder_name, 'Cylinder')
+        self.assertPlacementEqual(cylinder_shape.Placement, Placement(
             Vector(), Rotation(Vector(0, 1, 0), 90)))
         self.assertEqual(len(cylinder_path), 1)
         self.assertEqual(cylinder_path[0].TypeId, 'App::Part')
 
         resolved_cone = resolved_objects[1]
-        cone = resolved_cone['object']
-        cone_placement = resolved_cone['placement']
+        cone_shape = resolved_cone['shape']
+        cone_name = resolved_cone['name']
         cone_path = resolved_cone['path']
-        self.assertEqual(cone.TypeId, 'Part::Cone')
-        self.assertEqual(cone.Name, 'Cone')
-        self.assertPlacementEqual(cone_placement, Placement(
+        self.assertEqual(cone_name, 'Cone')
+        self.assertPlacementEqual(cone_shape.Placement, Placement(
             Vector(10, 0, 0), Rotation(Vector(0, 1, 0), 90)))
         self.assertEqual(len(cone_path), 1)
         self.assertEqual(cone_path[0].TypeId, 'App::Part')
@@ -385,13 +370,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        part = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(part.TypeId, 'App::Part')
-        self.assertEqual(part.Name, 'Part')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'Part')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(), Rotation(Vector(0, 1, 0), 90)))
         self.assertEqual(len(path), 0)
 
@@ -414,13 +398,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'App::Link')
-        self.assertEqual(resolved_shape.Name, 'CylinderLink')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'CylinderLink')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(10, 0, 0), Rotation()))
         self.assertEqual(len(path), 0)
 
@@ -444,14 +427,12 @@ class ResolveObjectsTest(unittest.TestCase):
         self.assertEqual(len(resolved_objects), 1)
 
         resolved_object = resolved_objects[0]
-        resolved_shape = resolved_object['object']
-        placement = resolved_object['placement']
+        shape = resolved_object['shape']
+        name = resolved_object['name']
         path = resolved_object['path']
 
-        self.assertEqual(resolved_shape.TypeId, 'App::Link')
-        self.assertEqual(resolved_shape.LinkTransform, True)
-        self.assertEqual(resolved_shape.Name, 'CylinderLink')
-        self.assertPlacementEqual(placement, Placement(
+        self.assertEqual(name, 'CylinderLink')
+        self.assertPlacementEqual(shape.Placement, Placement(
             Vector(15, 0, 0), Rotation()))
         self.assertEqual(len(path), 0)
 
