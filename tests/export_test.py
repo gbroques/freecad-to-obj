@@ -503,7 +503,7 @@ class ExportTest(unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), obj_filename)) as f:
             expected = f.read()
 
-        def object_name_getter(obj: object, path: List[object]) -> str:
+        def object_name_getter(obj: object, path: List[object], shape_index: int) -> str:
             return obj.Name
 
         obj_file_contents = freecad_to_obj.export(
@@ -516,7 +516,7 @@ class ExportTest(unittest.TestCase):
         box = document.addObject('Part::Box', 'Box')
         document.recompute()
 
-        def object_name_getter(obj: object, path: List[object]) -> str:
+        def object_name_getter(obj: object, path: List[object], shape_index: int) -> str:
             return obj.Placement
         with self.assertRaises(ValueError) as cm:
             obj_file_contents = freecad_to_obj.export(
