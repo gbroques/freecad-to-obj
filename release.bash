@@ -3,6 +3,13 @@
 # Convenience script for cutting releases:
 #   * Commit, tag, and push version change
 #   * Deploy to PyPi
+#
+# Need to install encpass.sh,
+# and then add PyPi password.
+# https://github.com/plyint/encpass.sh
+#
+# Run:
+#   encpass add pypi password
 # =========================================
 if [[ $# -eq 0 ]] ; then
     echo 'Usage: ./release.bash <version> (e.g. 0.2.0)'
@@ -24,7 +31,6 @@ set +x
 rm -rf dist/
 python setup.py sdist
 
-# https://github.com/plyint/encpass.sh
 . encpass.sh
 
 export TWINE_PASSWORD=$(get_secret pypi password)
