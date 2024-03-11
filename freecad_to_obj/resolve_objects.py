@@ -14,7 +14,7 @@ def resolve_objects(objects: List[object],
                         object, List[object]], bool] = lambda obj, path: False,
                     path: list = [],
                     parent_placement: Placement = None,
-                    chain: bool = True) -> dict:
+                    chain: bool = True) -> List[dict]:
     resolved = []
     for obj in objects:
         if not ignore_object(obj, path):
