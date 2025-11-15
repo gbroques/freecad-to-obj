@@ -102,4 +102,4 @@ See [Changelog](./CHANGELOG.md).
 For simplicity, this package does not care about thes generation of material (`.mtl`) files.
 
 ## Supported FreeCAD Versions
-Currently tested with FreeCAD `19.1`.
+Currently tested with FreeCAD `1.0.0`.
